@@ -1,0 +1,10 @@
+if (engineRPM > 0 && engineRPM <= 3000)
+outputTorque = 0.1f * engineRPM;
+else if (engineRPM > 3000 && engineRPM <= 6000)
+outputTorque = (2 * engineRPM)/3 + 100;
+else if (engineRPM > 6000 && engineRPM <= 8200)
+outputTorque = (252 * engineRPM)/9900 + (34380/99);
+else if (engineRPM > 8200 && engineRPM <= 10950)
+outputTorque = (52560 * engineRPM)/990000 + (981432/990);
+else if (engineRPM > 10950)
+outputTorque = 0f;
