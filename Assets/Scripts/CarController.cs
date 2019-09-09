@@ -11,7 +11,8 @@ public class CarController : MonoBehaviour
     private WheelCollider[] wheels;
     private float m_steeringWheelInput, m_acceleratorInput, m_steeringAngle, m_brakeInput, m_handBrakeInput;
     private int actualGear;
-    private float engineRPM, wheelRPM;
+    public float engineRPM;
+    private float wheelRPM;
     private float carSpeed;
     private Rigidbody rb;
     private float wTotalR, wRollingC;
