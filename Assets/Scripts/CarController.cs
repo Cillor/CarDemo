@@ -12,7 +12,7 @@ public class CarController : MonoBehaviour
     private float gearDriveRatio;
     private float wheelRPM;
     private Rigidbody rb;
-    private float wTotalR, wRollingC;
+    private float wheelsTotalRadius;
     private float transmissionEfficiency = 0.7f;
     private float outputEngineForce;
     private float normalDrag;
@@ -37,8 +37,7 @@ public class CarController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         wheels = GetComponentsInChildren<WheelCollider>();
-        wTotalR = wheels[0].radius;
-        wRollingC = wTotalR * 2f * Mathf.PI;
+        wheelsTotalRadius = wheels[0].radius;
         actualGear = 1;
         normalDrag = rb.drag;
 
@@ -124,8 +123,7 @@ public class CarController : MonoBehaviour
     float CalculateEngineRPM(int _desiredGear)
     {
         float desiredGearDriveRatio = gearRatio[_desiredGear] * finalDriveRatio;
-
-        wheelRPM = carSpeed / wTotalR;
+        wheelRPM = carSpeed / wheelsTotalRadius;
         float newEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
         newEngineRPM = Mathf.Abs(newEngineRPM);
         if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0))
@@ -218,7 +216,7 @@ public class CarController : MonoBehaviour
         engineRPM = CalculateEngineRPM(actualGear);
         engineRPM *= Mathf.Lerp(.2f, 1f, Input.GetAxis("Accelerator"));
 
-        outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wTotalR;
+        outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wheelsTotalRadius;
         outputEngineForce *= acceleratorInput;
 
         LimitEngineRPM();
@@ -227,7 +225,7 @@ public class CarController : MonoBehaviour
 
     void LimitEngineRPM()
     {
-        if (Mathf.Abs(engineRPM) > engineRPMLimit)
+        if (engineRPM > engineRPMLimit)
         {
             outputEngineForce = 0;
             if (brakeInput == 0)
