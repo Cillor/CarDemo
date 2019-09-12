@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class CarSound : MonoBehaviour
 {
-    public CarController carControllerScript;
-    public AudioSource engineSource;
+    CarController carControllerScript;
+    AudioSource engineSource;
     // Start is called before the first frame update
     void Start()
     {
-        engineSource = GetComponent<AudioSource> ();
+        carControllerScript = GetComponent<CarController>();
+        engineSource = GetComponent<AudioSource>();
         engineSource.Play();
     }
 
     // Update is called once per frame
     void Update()
     {
-        engineSource.pitch = carControllerScript.engineRPM/(carControllerScript.engineRPMTorqueCurveEnd/2);
-        //engineSource.pitch += 0.001f;
+        engineSource.pitch = carControllerScript.engineRPM / (carControllerScript.engineRPMLimit / 2);
     }
 }

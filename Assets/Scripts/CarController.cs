@@ -7,53 +7,62 @@ public enum TractionType { AWD, RWD, FWD }
 public class CarController : MonoBehaviour
 {
     public static bool isHandbrakePressed;
-
     private WheelCollider[] wheels;
-    private float m_steeringWheelInput, m_acceleratorInput, m_steeringAngle, m_brakeInput, m_handBrakeInput;
-    private int actualGear;
-    public float engineRPM;
+    private float steeringWheelInput, acceleratorInput, brakeInput;
+    private float gearDriveRatio;
     private float wheelRPM;
-    private float carSpeed;
     private Rigidbody rb;
     private float wTotalR, wRollingC;
     private float transmissionEfficiency = 0.7f;
-    private float outputTorque, outputEngineForce;
-    private float rollingResistence, drag, rrConstant, dragMultiplier;
-    private bool slowingDown;
-    private float engineRPMLimiter;
-
+    private float outputEngineForce;
+    private float normalDrag;
+    private bool isAcceleratorPressed;
+    private float revolutionsFactor = 60;
     private float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
+    [HideInInspector] public int actualGear;
+    [HideInInspector] public float carSpeed, engineRPM;
 
     public float maxSteerAngle = 30;
     public GameObject wheelShape;
-    private float revolutionsFactor = 60;
-    public Text speedText;
-
-    [Space]
-    public float dragConstant;
-
-    [Space]
-    public AnimationCurve engineTorque;
-    public float engineIdle, engineRPMTorqueCurveEnd;
-    public float brakeTorque, handBrakeTorque, slowingDownTorque;
+    [Space] public AnimationCurve engineTorque;
+    public float engineIdle, engineRPMLimit;
+    public float brakeTorque, handBrakeTorque, slowingDownTorque, slowingDownDrag;
     public float finalDriveRatio;
     public float[] gearRatio;
-    public Text engineRPMText, actualGearText;
-    public Image engineRPMNeedle;
-    private float minNeedleAng = 90f, maxNeedleAng = -90f;
 
     [Space]
     public TractionType tractionType;
 
-    public void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         wheels = GetComponentsInChildren<WheelCollider>();
         wTotalR = wheels[0].radius;
         wRollingC = wTotalR * 2f * Mathf.PI;
         actualGear = 1;
-        rrConstant = 30 * dragConstant;
+        normalDrag = rb.drag;
 
+        InitializeWheelShapes();
+    }
+
+    void Update()
+    {
+        GetInput();
+        GearChange();
+    }
+
+    void FixedUpdate()
+    {
+        Steer();
+        Brake();
+        Engine();
+        Accelerate();
+        CalculateCarSpeed();
+        UpdateWheelPoses();
+    }
+
+    void InitializeWheelShapes()
+    {
         for (int i = 0; i < wheels.Length; ++i)
         {
             var wheel = wheels[i];
@@ -67,75 +76,81 @@ public class CarController : MonoBehaviour
                     ws.transform.localScale = new Vector3(ws.transform.localScale.x * -1f, ws.transform.localScale.y, ws.transform.localScale.z);
             }
         }
+    }
 
-        foreach (WheelCollider wheel in wheels)
+    void GetInput()
+    {
+        steeringWheelInput = Input.GetAxis("SteeringWheel");
+        acceleratorInput = Input.GetAxis("Accelerator");
+        brakeInput = Input.GetAxis("Brake");
+        isHandbrakePressed = Input.GetButton("HandBrake");
+        isAcceleratorPressed = Input.GetButton("Accelerator");
+    }
+
+    void GearChange()
+    {
+        if (Input.GetButtonDown("GearUp"))
         {
-            wheel.brakeTorque = 0;
+            if (actualGear == 0 && carSpeed < .5f)
+            {
+                actualGear++;
+            }
+            else if (actualGear < gearRatio.Length - 1 && actualGear > 0)
+            {
+                actualGear++;
+            }
+
+            gearDriveRatio = gearRatio[actualGear] * finalDriveRatio;
+        }
+
+        if (Input.GetButtonDown("GearDown"))
+        {
+            if (CalculateEngineRPM(actualGear - 1) > engineRPMLimit)
+                return;
+
+            if (actualGear == 1 && carSpeed < .5f)
+            {
+                actualGear--;
+            }
+            else if (actualGear > 1)
+            {
+                actualGear--;
+            }
+
+            gearDriveRatio = gearRatio[actualGear] * finalDriveRatio;
         }
     }
 
-    public void Update()
+    float CalculateEngineRPM(int _desiredGear)
     {
-        GetInput();
+        float desiredGearDriveRatio = gearRatio[_desiredGear] * finalDriveRatio;
+
+        wheelRPM = carSpeed / wTotalR;
+        float newEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
+        newEngineRPM = Mathf.Abs(newEngineRPM);
+        if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0))
+        {
+            newEngineRPM = engineIdle;
+        }
+
+        return newEngineRPM;
     }
 
-    public void GetInput()
+    void Steer()
     {
-        GearChange();
-
-        m_steeringWheelInput = Input.GetAxis("SteeringWheel");
-        m_acceleratorInput = Input.GetAxis("Accelerator");
-        m_brakeInput = Input.GetAxis("Brake");
-    }
-
-    public void Steer()
-    {
-        m_steeringAngle = m_steeringWheelInput * maxSteerAngle;
+        float steeringAngle = steeringWheelInput * maxSteerAngle;
 
         foreach (WheelCollider wheel in wheels)
         {
             if (wheel.transform.localPosition.z > 0)
-                wheel.steerAngle = m_steeringAngle;
+                wheel.steerAngle = steeringAngle;
         }
     }
 
-    public void Accelerate()
+    void Brake()
     {
-        if (LapTimer.countdownStart > 0)
-            return;
-        switch (tractionType)
+        if (isHandbrakePressed)
         {
-            case TractionType.AWD:
-                foreach (WheelCollider wheel in wheels)
-                {
-                    wheel.motorTorque = outputTorque;
-                }
-                break;
-            case TractionType.RWD:
-                foreach (WheelCollider wheel in wheels)
-                {
-                    if (wheel.transform.localPosition.z < 0)
-                        wheel.motorTorque = outputTorque;
-                }
-                break;
-            case TractionType.FWD:
-                foreach (WheelCollider wheel in wheels)
-                {
-                    if (wheel.transform.localPosition.z > 0)
-                        wheel.motorTorque = outputTorque;
-                }
-                break;
-        }
-
-        carSpeed = rb.velocity.magnitude;
-        speedText.text = Helper.Round(carSpeed * 3.6f, 2) + "km/h";
-    }
-
-    public void Brake()
-    {
-        if (Input.GetButton("HandBrake"))
-        {
-            isHandbrakePressed = true;
             foreach (WheelCollider wheel in wheels)
             {
                 if (wheel.transform.localPosition.z < 0)
@@ -154,100 +169,91 @@ public class CarController : MonoBehaviour
         }
         else
         {
-            isHandbrakePressed = false;
             foreach (WheelCollider wheel in wheels)
             {
-                if (!slowingDown)
-                    wheel.brakeTorque = brakeTorque * m_brakeInput;
+                wheel.brakeTorque = brakeTorque * brakeInput;
             }
         }
     }
 
-    public void GearChange()
+    void Accelerate()
     {
-        if (Input.GetButtonDown("GearUp"))
-        {
-            if (actualGear == 0 && carSpeed < 0.1f)
-                actualGear++;
-            else if (actualGear < gearRatio.Length - 1 && actualGear > 0)
-                actualGear++;
-        }
-        if (Input.GetButtonDown("GearDown"))
-        {
-            if (actualGear == 1 && carSpeed < 0.1f)
-                actualGear--;
-            else if (actualGear > 1)
-                actualGear--;
-        }
+        if (LapTimer.countdownStart > 0)
+            return;
 
-        actualGearText.text = (actualGear - 1).ToString();
+        switch (tractionType)
+        {
+            case TractionType.AWD:
+                foreach (WheelCollider wheel in wheels)
+                {
+                    wheel.motorTorque = outputEngineForce;
+                }
+                break;
+            case TractionType.RWD:
+                foreach (WheelCollider wheel in wheels)
+                {
+                    if (wheel.transform.localPosition.z < 0)
+                        wheel.motorTorque = outputEngineForce;
+                }
+                break;
+            case TractionType.FWD:
+                foreach (WheelCollider wheel in wheels)
+                {
+                    if (wheel.transform.localPosition.z > 0)
+                        wheel.motorTorque = outputEngineForce;
+                }
+                break;
+        }
     }
 
-    public void GearBox()
+    void CalculateCarSpeed()
     {
-        wheelRPM = carSpeed / wTotalR;
-        engineRPM = wheelRPM * gearRatio[actualGear] * finalDriveRatio * revolutionsFactor / 2 * Mathf.PI;
-        engineRPM *= Mathf.Lerp(.2f, 1f, Input.GetAxisRaw("Accelerator"));
-        if (Mathf.Abs(engineRPM) < engineIdle && (actualGear == 2 || actualGear == 0))
-        {
-            engineRPM = engineIdle;
-        }
+        float xSpeed = rb.velocity.x;
+        float zSpeed = rb.velocity.z;
+        carSpeed = Mathf.Sqrt(xSpeed * xSpeed + zSpeed * zSpeed);
+    }
 
-        if (m_steeringWheelInput == 0)
+    void Engine()
+    {
+        engineRPM = CalculateEngineRPM(actualGear);
+        engineRPM *= Mathf.Lerp(.2f, 1f, Input.GetAxis("Accelerator"));
+
+        outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wTotalR;
+        outputEngineForce *= acceleratorInput;
+
+        LimitEngineRPM();
+        DeccelerateCar();
+    }
+
+    void LimitEngineRPM()
+    {
+        if (Mathf.Abs(engineRPM) > engineRPMLimit)
         {
-            if ((Mathf.Abs(engineRPM) > engineRPMTorqueCurveEnd || engineRPM == 0) || (m_acceleratorInput <= 0.1f && carSpeed > 1f))
+            outputEngineForce = 0;
+            if (brakeInput == 0)
             {
-                outputEngineForce = 0;
-                if (m_brakeInput == 0)
+                foreach (WheelCollider wheel in wheels)
                 {
-                    slowingDown = true;
-                    foreach (WheelCollider wheel in wheels)
-                    {
-                        float brakeMultiplierRPM = engineRPM;
-                        if (brakeMultiplierRPM == 0)
-                            brakeMultiplierRPM = 14000;
-                        wheel.brakeTorque = slowingDownTorque * Mathf.Pow(2, Mathf.Abs(brakeMultiplierRPM) / engineRPMTorqueCurveEnd);
-                    }
-                }
-                else
-                {
-                    slowingDown = false;
+                    wheel.brakeTorque = slowingDownTorque;
                 }
             }
-            else
-            {
-                slowingDown = false;
-                outputEngineForce = engineTorque.Evaluate(Mathf.Abs(engineRPM)) * (gearRatio[actualGear] * finalDriveRatio) * transmissionEfficiency / wTotalR * m_acceleratorInput;
-            }
+            return;
+        }
+    }
+
+    void DeccelerateCar()
+    {
+        if (!isAcceleratorPressed && carSpeed > 1f)
+        {
+            rb.drag = slowingDownDrag;
         }
         else
         {
-            slowingDown = false;
-            outputEngineForce = engineTorque.Evaluate(Mathf.Abs(engineRPM)) * (gearRatio[actualGear] * finalDriveRatio) * transmissionEfficiency / wTotalR * m_acceleratorInput;
-        }
-
-
-        drag = dragConstant * carSpeed * carSpeed;
-        rollingResistence = rrConstant * carSpeed;
-        if (carSpeed < 0.1f)
-        {
-            drag = 0;
-            rollingResistence = 0;
-        }
-        outputTorque = outputEngineForce - ((drag + rollingResistence) * Mathf.Sign(wheels[0].rpm));
-        //Debug.Log("EngineRPM: " + engineRPM + "/ WheelRPM: " + wheels[0].rpm);
-
-        float angRPM = Mathf.Lerp(minNeedleAng, maxNeedleAng, Mathf.Abs(engineRPM) / engineRPMTorqueCurveEnd);
-        engineRPMNeedle.transform.eulerAngles = new Vector3(0, 0, angRPM);
-        engineRPMText.text = Helper.Round(engineRPM, 0).ToString();
-
-        foreach (WheelCollider wheel in wheels)
-        {
-            //Debug.Log("Wheel Torque: " + wheel.motorTorque + "/ Wheel Brake: " + wheel.brakeTorque);
+            rb.drag = normalDrag;
         }
     }
 
-    public void UpdateWheelPoses()
+    void UpdateWheelPoses()
     {
         foreach (WheelCollider wheel in wheels)
         {
@@ -262,14 +268,5 @@ public class CarController : MonoBehaviour
                 shapeTransform.rotation = q;
             }
         }
-    }
-
-    private void FixedUpdate()
-    {
-        Steer();
-        GearBox();
-        Accelerate();
-        UpdateWheelPoses();
-        Brake();
     }
 }

@@ -98,38 +98,47 @@ namespace Quixel
                 plant = true;
             }
             GetPresets();
-            try {
+            try
+            {
                 path = ConstructPath(objectList);
 
-                if(path == null || path == "") {
+                if (path == null || path == "")
+                {
                     Debug.Log("Asset: " + (string)objectList["name"] + " already exist in the Project. Please delete/rename the existing folder and re-import this asset.");
                     AssetDatabase.Refresh();
                     return null;
                 }
 
                 GetShaderType();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug.Log("Error setting import path.");
                 Debug.Log(ex.ToString());
             }
 
-            try {
+            try
+            {
                 //process textures
                 ProcessTextures(textureComps);
-                if(finalMat == null) {
+                if (finalMat == null)
+                {
                     Debug.Log("The import path is incorrect. Asset import aborted.");
                     return null;
-                } else
+                }
+                else
                 {
                     if (type.ToLower().Contains("surface"))
                     {
-                        foreach(MeshRenderer render in MegascansUtilities.GetSelectedMeshRenderers())
+                        foreach (MeshRenderer render in MegascansUtilities.GetSelectedMeshRenderers())
                         {
                             render.material = finalMat;
                         }
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug.Log("Error importing textures.");
                 Debug.Log(ex.ToString());
             }
@@ -145,15 +154,19 @@ namespace Quixel
 
             if (meshComps.Count > 0)
             {
-                try {
-                //process meshes
-                ProcessMeshes(meshComps);
-                } catch (Exception ex) {
+                try
+                {
+                    //process meshes
+                    ProcessMeshes(meshComps);
+                }
+                catch (Exception ex)
+                {
                     Debug.Log("Error importing meshes.");
                     Debug.Log(ex.ToString());
                 }
-                
-                try {
+
+                try
+                {
                     //process prefabs
                     if (assetType > 1)
                     {
@@ -163,7 +176,9 @@ namespace Quixel
                     {
                         CreatePrefabs();
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     Debug.Log("Error making prefabs.");
                     Debug.Log(ex.ToString());
                 }
@@ -179,7 +194,7 @@ namespace Quixel
             return path;
         }
 
-#region Mesh Processing Methods
+        #region Mesh Processing Methods
 
         /// <summary>
         /// Import meshes, start from highest LOD and import the chain.
@@ -251,7 +266,7 @@ namespace Quixel
                     absPath = absPath.Replace("High", "LOD0");
                     ld = 0;
                 }
-                
+
                 newPath = newPath.Contains("$lod") ? newPath.Replace("$lod", "LOD" + ld.ToString()) : newPath + "_" + i.ToString() + "_LOD" + ld.ToString();
 
                 //newPath = meshName + "_" + i.ToString() + "_LOD" + ld.ToString();
@@ -387,7 +402,7 @@ namespace Quixel
                     PrefabUtility.ReplacePrefab(g, pf, ReplacePrefabOptions.ReplaceNameBased);
 
                 }
-                if(!addAssetToScene)
+                if (!addAssetToScene)
                 {
                     DestroyImmediate(g);
                 }
@@ -533,7 +548,7 @@ namespace Quixel
                     DestroyImmediate(gos[i]);
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -570,9 +585,9 @@ namespace Quixel
             return path;
         }
 
-#endregion
+        #endregion
 
-#region Texture Processing Methods
+        #region Texture Processing Methods
 
         /// <summary>
         /// Process textures from Megascans asset import.
@@ -664,7 +679,8 @@ namespace Quixel
         /// <returns></returns>
         Material CreateMaterial()
         {
-            try {
+            try
+            {
                 string rp = matPath + ".mat";
                 Material mat = (Material)AssetDatabase.LoadAssetAtPath(rp, typeof(Material));
                 if (!mat)
@@ -685,7 +701,8 @@ namespace Quixel
                         if (MegascansUtilities.isLegacy())
                         {
                             mat.shader = Shader.Find("LightweightPipeline/Standard (Physically Based)");
-                        } else
+                        }
+                        else
                         {
                             mat.shader = Shader.Find("Lightweight Render Pipeline/Lit");
                         }
@@ -700,7 +717,9 @@ namespace Quixel
                     }
                 }
                 return mat;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug.Log("Exception: " + ex.ToString());
                 return null;
             }
@@ -722,22 +741,24 @@ namespace Quixel
         /// <param name="translucency"></param>
         Material ReadWriteAllTextures(string albedo, string opacity, string normals, string metallic, string specular, string AO, string gloss, string displacement, string roughness, string translucency)
         {
-            try {
+            try
+            {
                 Material mat = CreateMaterial();
 
-                if(mat == null) {
+                if (mat == null)
+                {
                     return null;
                 }
 
                 //create a new work thread for each texture to be processed.
                 //Pack the opacity into the alpha channel of albedo if it exists.
                 string texMapName = (string)mapNames["Albedo"];
-                tempTexName = texPath.Contains("$mapName")? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                 string p = tempTexName + ".png";
                 mapName = opacity != null ? "Albedo + Alpha" : "Albedo";
                 Texture2D tex;
                 tex = PackTextures(albedo, opacity, p);
-            
+
                 mat.SetTexture("_MainTex", tex);
                 mat.SetTexture("_BaseColorMap", tex);
 
@@ -784,24 +805,24 @@ namespace Quixel
                 if (texPack < 1 || shaderType < 1)
                 {
                     mapName = "Masks";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", "Masks"): texPath + "Masks";
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", "Masks") : texPath + "Masks";
                     p = tempTexName + ".png";
                     mat.SetFloat("_Metallic", 1.0f);
                     tex = PackTextures(metallic, AO, displacement, useRoughness ? roughness : gloss, p, useRoughness);
                     mat.SetTexture("_MaskMap", tex);
                     mat.EnableKeyword("_MASKMAP");
                     mat.SetFloat("_MaterialID", 1);
-                    mat.SetTexture("_MetallicGlossMap", tex); 
+                    mat.SetTexture("_MetallicGlossMap", tex);
                     mat.EnableKeyword("_METALLICSPECGLOSSMAP");
                     mat.EnableKeyword("_METALLICGLOSSMAP");
                 }
-                
+
                 //do we need to process a specular map?
                 if (texPack > 0 && specular != null)
                 {
                     texMapName = (string)mapNames["Specular"];
                     mapName = "Specular + Gloss";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                     p = tempTexName + ".png";
                     tex = PackTextures(specular, useRoughness ? roughness : gloss, p, useRoughness);
                     mat.SetTexture("_SpecGlossMap", tex);
@@ -822,7 +843,7 @@ namespace Quixel
                 {
                     texMapName = (string)mapNames["Normal"];
                     mapName = "Normals";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                     p = tempTexName + ".png";
                     CreateTexture(normals, p);
                     tex = TextureImportSetup(p, true, false);
@@ -830,12 +851,12 @@ namespace Quixel
                     mat.SetTexture("_NormalMap", tex);
                     mat.EnableKeyword("_NORMALMAP_TANGENT_SPACE");
                     mat.EnableKeyword("_NORMALMAP");
-                    
+
                     mapName = "Normals_Terrain";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName + "_Terrain"): texPath + texMapName + "_Terrain";
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName + "_Terrain") : texPath + texMapName + "_Terrain";
                     p = tempTexName + ".png";
 
-                    if(generateTerrainNormal)
+                    if (generateTerrainNormal)
                     {
                         MegascansUtilities.ImportTerrainNormal(normals, p, resX, resY, importResolution);
                     }
@@ -845,7 +866,7 @@ namespace Quixel
                 {
                     texMapName = (string)mapNames["Displacement"];
                     mapName = "Displacement";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                     p = tempTexName + ".png";
                     CreateTexture(displacement, p);
                     tex = TextureImportSetup(p, false, false);
@@ -868,7 +889,7 @@ namespace Quixel
                 {
                     texMapName = (string)mapNames["AO"];
                     mapName = "Occlusion";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                     p = tempTexName + ".png";
                     CreateTexture(AO, p);
                     tex = TextureImportSetup(p, false, false);
@@ -880,7 +901,7 @@ namespace Quixel
                 {
                     texMapName = (string)mapNames["Translucency"];
                     mapName = "Translucency";
-                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName): texPath + texMapName;
+                    tempTexName = texPath.Contains("$mapName") ? texPath.Replace("$mapName", texMapName) : texPath + texMapName;
                     p = tempTexName + ".png";
                     tex = PackTextures(translucency, translucency, translucency, null, p);
                     mat.SetInt("_MaterialID", 0);
@@ -901,7 +922,9 @@ namespace Quixel
                 }
                 EditorUtility.ClearProgressBar();
                 return mat;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug.Log("Exception: " + ex.ToString());
                 return null;
             }
@@ -1080,9 +1103,9 @@ namespace Quixel
             return false;
         }
 
-#endregion
+        #endregion
 
-#region Formatting Utilities
+        #region Formatting Utilities
 
         /// <summary>
         /// Replace any spaces with underscores. if more than one input, place underscore between them.
@@ -1097,13 +1120,14 @@ namespace Quixel
             }
 
             string newTxt = "";
-            
+
             int maxIterations = txt.Length;
 
-            if (txt[maxIterations-1] == "") {
+            if (txt[maxIterations - 1] == "")
+            {
                 maxIterations--;
             }
-                
+
             for (int i = 0; i < maxIterations; ++i)
             {
                 if (i > 0)
@@ -1150,7 +1174,8 @@ namespace Quixel
         /// </summary>
         /// <param name="jsonPath"></param>
         /// <returns></returns>
-        string ConstructPath(Newtonsoft.Json.Linq.JObject objectList) {
+        string ConstructPath(Newtonsoft.Json.Linq.JObject objectList)
+        {
             ///
             /// Unity doesn't allow you to create objects in directories which don't exist.
             /// So in this function, we create any and all necessary subdirectories that are required.
@@ -1165,44 +1190,53 @@ namespace Quixel
             string defPath = "";
             bool addNextPathPart = false;
 
-            if ((string)objectList["exportPath"] != "") {
+            if ((string)objectList["exportPath"] != "")
+            {
                 path = (string)objectList["exportPath"];
-            } else
+            }
+            else
             {
                 defPath = "Assets";
                 addNextPathPart = true;
             }
 
             string[] pathParts = FixSlashes(path).Split('/');
-            
-            List<string> finalPathParts = new List<string> ();
-            
-            foreach(string part in pathParts){
-                if(part == "Assets" && !addNextPathPart) {
+
+            List<string> finalPathParts = new List<string>();
+
+            foreach (string part in pathParts)
+            {
+                if (part == "Assets" && !addNextPathPart)
+                {
                     addNextPathPart = true;
                 }
 
-                if(addNextPathPart) {
+                if (addNextPathPart)
+                {
                     finalPathParts.Add(part);
                 }
             }
 
-            if(!addNextPathPart) {
+            if (!addNextPathPart)
+            {
                 return null;
             }
 
             //First, create the user specified path from the importer settings.
-            
-            if (finalPathParts.Count > 0) {
-                for (int i = 0; i < finalPathParts.Count; i++) {
+
+            if (finalPathParts.Count > 0)
+            {
+                for (int i = 0; i < finalPathParts.Count; i++)
+                {
                     defPath = ValidateFolderCreate(defPath, finalPathParts[i]); //FixSlashes(Path.Combine(defPath, finalPathParts[i]));//ValidateFolderCreate(defPath, finalPathParts[i]);
                 }
             }
 
-            if (!AssetDatabase.IsValidFolder(defPath)) {
+            if (!AssetDatabase.IsValidFolder(defPath))
+            {
                 return null;
             }
-            
+
             //then create check to see if the asset type subfolder exists, create it if it doesn't.
             defPath = ValidateFolderCreate(defPath, GetAssetType((string)objectList["path"]));
 
@@ -1251,15 +1285,17 @@ namespace Quixel
         /// </summary>
         void GetAssetFolderName(Newtonsoft.Json.Linq.JObject objectList)
         {
-            try {
+            try
+            {
                 assetResolution = "";
                 string namingConvention = (string)objectList["namingConvention"];
                 finalName = namingConvention;
-                if (namingConvention != "" && namingConvention != null){
+                if (namingConvention != "" && namingConvention != null)
+                {
 
-                    if(namingConvention.Contains("$id"))
+                    if (namingConvention.Contains("$id"))
                     {
-                        finalName = finalName.Replace("$id",(string)objectList["id"]);
+                        finalName = finalName.Replace("$id", (string)objectList["id"]);
                     }
 
                     if (namingConvention.Contains("$name"))
@@ -1278,14 +1314,16 @@ namespace Quixel
                     }
                     return;
                 }
-            } catch(Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Debug.Log(ex);
             }
 
             //then create a unique subfolder for the asset.
             assetName = (string)objectList["name"];
             id = (string)objectList["id"];
-            finalName = FixSpaces(new string[] {assetName.Replace(" ", "_"), id});
+            finalName = FixSpaces(new string[] { assetName.Replace(" ", "_"), id });
             Debug.Log("Final name:" + finalName);
         }
 
@@ -1315,7 +1353,7 @@ namespace Quixel
                 }
             }
         }
-#endregion
+        #endregion
     }
 }
 #endif

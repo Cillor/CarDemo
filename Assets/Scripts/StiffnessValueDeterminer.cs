@@ -31,7 +31,7 @@ public class StiffnessValueDeterminer : MonoBehaviour
 
     void DetecSlip()
     {
-        WheelHit hit;
+        /*WheelHit hit;
         if (wheel.GetGroundHit(out hit))
         {
             if (hit.forwardSlip > 0.9f || hit.sidewaysSlip > 0.9f)
@@ -43,6 +43,6 @@ public class StiffnessValueDeterminer : MonoBehaviour
                 Debug.Log("Braking Slip");
             }
 
-        }
+        }*/
     }
 }
