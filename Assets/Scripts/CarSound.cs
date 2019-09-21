@@ -17,6 +17,6 @@ public class CarSound : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        engineSource.pitch = carControllerScript.engineRPM / (carControllerScript.engineRPMLimit / 2);
+        engineSource.pitch = CarController.engineRPM / (carControllerScript.engineRPMLimit / 2);
     }
 }

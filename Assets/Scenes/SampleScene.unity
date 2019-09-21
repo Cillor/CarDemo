@@ -7377,6 +7377,7 @@ GameObject:
   - component: {fileID: 1653037912}
   - component: {fileID: 1653037911}
   - component: {fileID: 1653037910}
+  - component: {fileID: 1653037919}
   - component: {fileID: 1653037914}
   - component: {fileID: 1653037917}
   - component: {fileID: 1653037918}
@@ -7401,9 +7402,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0abe65983de0c4047add043371d42d00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actualGear: 0
-  carSpeed: 0
-  engineRPM: 0
   maxSteerAngle: 30
   wheelShape: {fileID: 115660, guid: c4b1e6c451cdd40998befa14853156d8, type: 3}
   engineTorque:
@@ -7462,7 +7460,7 @@ MonoBehaviour:
   brakeTorque: 100000
   handBrakeTorque: 1000000
   slowingDownTorque: 900
-  slowingDownDrag: 0.5
+  slowingDownDrag: 0.3
   finalDriveRatio: 0.9
   gearRatio:
   - -8
@@ -7688,6 +7686,23 @@ MonoBehaviour:
   backWheelL: {fileID: 1001210979}
   backWheelR: {fileID: 1920590670}
   antiRoll: 12000
+--- !u!114 &1653037919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1653037909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a9759f3ef850e24eb54d978244619b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cylindersQuantity: 6
+  rpmPerInjection: 3
+  tankCapacityInLiters: 90
+  topSpeed: 75
+  desiredConsumption: 700
 --- !u!1 &1703661708
 GameObject:
   m_ObjectHideFlags: 0

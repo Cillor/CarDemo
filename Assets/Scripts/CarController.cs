@@ -7,6 +7,7 @@ public enum TractionType { AWD, RWD, FWD }
 public class CarController : MonoBehaviour
 {
     public static bool isHandbrakePressed;
+    public static float carSpeed, engineRPM;
     private WheelCollider[] wheels;
     private float steeringWheelInput, acceleratorInput, brakeInput;
     private float gearDriveRatio;
@@ -19,8 +20,7 @@ public class CarController : MonoBehaviour
     private bool isAcceleratorPressed;
     private float revolutionsFactor = 60;
     private float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
-    [HideInInspector] public int actualGear;
-    [HideInInspector] public float carSpeed, engineRPM;
+    [HideInInspector] public Gears gear;
 
     public float maxSteerAngle = 30;
     public GameObject wheelShape;
@@ -38,8 +38,8 @@ public class CarController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         wheels = GetComponentsInChildren<WheelCollider>();
         wheelsTotalRadius = wheels[0].radius;
-        actualGear = 1;
         normalDrag = rb.drag;
+        gear = new Gears(1, gearRatio.Length - 1);
 
         InitializeWheelShapes();
     }
@@ -62,17 +62,14 @@ public class CarController : MonoBehaviour
 
     void InitializeWheelShapes()
     {
-        for (int i = 0; i < wheels.Length; ++i)
+        foreach (WheelCollider wheel in wheels)
         {
-            var wheel = wheels[i];
-
             if (wheelShape != null)
             {
-                var ws = GameObject.Instantiate(wheelShape);
-                ws.transform.parent = wheel.transform;
-
+                GameObject inSceneWheelShape = GameObject.Instantiate(wheelShape);
+                inSceneWheelShape.transform.parent = wheel.transform;
                 if (wheel.transform.localPosition.x < 0f)
-                    ws.transform.localScale = new Vector3(ws.transform.localScale.x * -1f, ws.transform.localScale.y, ws.transform.localScale.z);
+                    inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
             }
         }
     }
@@ -81,52 +78,44 @@ public class CarController : MonoBehaviour
     {
         steeringWheelInput = Input.GetAxis("SteeringWheel");
         acceleratorInput = Input.GetAxis("Accelerator");
+        if (FuelConsumption.fuelInTank < 0)
+            acceleratorInput = 0;
         brakeInput = Input.GetAxis("Brake");
         isHandbrakePressed = Input.GetButton("HandBrake");
-        isAcceleratorPressed = Input.GetButton("Accelerator");
+
+        if (acceleratorInput > 0)
+            isAcceleratorPressed = true;
+        else
+            isAcceleratorPressed = false;
     }
 
     void GearChange()
     {
         if (Input.GetButtonDown("GearUp"))
         {
-            if (actualGear == 0 && carSpeed < .5f)
-            {
-                actualGear++;
-            }
-            else if (actualGear < gearRatio.Length - 1 && actualGear > 0)
-            {
-                actualGear++;
-            }
+            gear.GearUp();
 
-            gearDriveRatio = gearRatio[actualGear] * finalDriveRatio;
+            gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
         }
 
         if (Input.GetButtonDown("GearDown"))
         {
-            if (CalculateEngineRPM(actualGear - 1) > engineRPMLimit)
+            if (CalculateEngineRPM(gear.actual - 1) > engineRPMLimit)
                 return;
 
-            if (actualGear == 1 && carSpeed < .5f)
-            {
-                actualGear--;
-            }
-            else if (actualGear > 1)
-            {
-                actualGear--;
-            }
+            gear.GearDown();
 
-            gearDriveRatio = gearRatio[actualGear] * finalDriveRatio;
+            gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
         }
     }
 
-    float CalculateEngineRPM(int _desiredGear)
+    public float CalculateEngineRPM(int _desiredGear)
     {
         float desiredGearDriveRatio = gearRatio[_desiredGear] * finalDriveRatio;
         wheelRPM = carSpeed / wheelsTotalRadius;
         float newEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
         newEngineRPM = Mathf.Abs(newEngineRPM);
-        if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0))
+        if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0) && FuelConsumption.fuelInTank > 0)
         {
             newEngineRPM = engineIdle;
         }
@@ -184,21 +173,21 @@ public class CarController : MonoBehaviour
             case TractionType.AWD:
                 foreach (WheelCollider wheel in wheels)
                 {
-                    wheel.motorTorque = outputEngineForce;
+                    wheel.motorTorque = outputEngineForce * acceleratorInput;
                 }
                 break;
             case TractionType.RWD:
                 foreach (WheelCollider wheel in wheels)
                 {
                     if (wheel.transform.localPosition.z < 0)
-                        wheel.motorTorque = outputEngineForce;
+                        wheel.motorTorque = outputEngineForce * acceleratorInput;
                 }
                 break;
             case TractionType.FWD:
                 foreach (WheelCollider wheel in wheels)
                 {
                     if (wheel.transform.localPosition.z > 0)
-                        wheel.motorTorque = outputEngineForce;
+                        wheel.motorTorque = outputEngineForce * acceleratorInput;
                 }
                 break;
         }
@@ -213,11 +202,10 @@ public class CarController : MonoBehaviour
 
     void Engine()
     {
-        engineRPM = CalculateEngineRPM(actualGear);
+        engineRPM = CalculateEngineRPM(gear.actual);
         engineRPM *= Mathf.Lerp(.2f, 1f, Input.GetAxis("Accelerator"));
 
         outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wheelsTotalRadius;
-        outputEngineForce *= acceleratorInput;
 
         LimitEngineRPM();
         DeccelerateCar();

@@ -24,14 +24,14 @@ public class CarHUD : MonoBehaviour
 
     public void ChangeTexts()
     {
-        engineRPMText.text = Helper.Round(carControllerScript.engineRPM, 0).ToString();
-        actualGearText.text = (carControllerScript.actualGear - 1).ToString();
-        speedText.text = Helper.Round(carControllerScript.carSpeed * 3.6f, 2) + "km/h";
+        engineRPMText.text = Helper.Round(CarController.engineRPM, 0).ToString();
+        actualGearText.text = (carControllerScript.gear.actual - 1).ToString();
+        speedText.text = Helper.Round(CarController.carSpeed * 3.6f, 2) + "km/h";
     }
 
     public void ChangeRPMNeedle()
     {
-        float angRPM = Mathf.Lerp(minNeedleAng, maxNeedleAng, Mathf.Abs(carControllerScript.engineRPM) / carControllerScript.engineRPMLimit);
+        float angRPM = Mathf.Lerp(minNeedleAng, maxNeedleAng, Mathf.Abs(CarController.engineRPM) / carControllerScript.engineRPMLimit);
         engineRPMNeedle.transform.eulerAngles = new Vector3(0, 0, angRPM);
     }
 }
