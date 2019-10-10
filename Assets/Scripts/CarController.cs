@@ -23,7 +23,7 @@ public class CarController : MonoBehaviour
     [HideInInspector] public Gears gear;
 
     public float maxSteerAngle = 30;
-    public GameObject wheelShape;
+    public GameObject frontWheelShape, backWheelShape;
     [Space] public AnimationCurve engineTorque;
     public float engineIdle, engineRPMLimit;
     public float brakeTorque, handBrakeTorque, slowingDownTorque, slowingDownDrag;
@@ -64,12 +64,22 @@ public class CarController : MonoBehaviour
     {
         foreach (WheelCollider wheel in wheels)
         {
-            if (wheelShape != null)
+            if (frontWheelShape && backWheelShape)
             {
-                GameObject inSceneWheelShape = GameObject.Instantiate(wheelShape);
-                inSceneWheelShape.transform.parent = wheel.transform;
-                if (wheel.transform.localPosition.x < 0f)
-                    inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
+                if (wheel.transform.localPosition.z > 0)
+                {
+                    GameObject inSceneWheelShape = GameObject.Instantiate(frontWheelShape);
+                    inSceneWheelShape.transform.parent = wheel.transform;
+                    if (wheel.transform.localPosition.x > 0f)
+                        inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
+                }
+                else
+                {
+                    GameObject inSceneWheelShape = GameObject.Instantiate(backWheelShape);
+                    inSceneWheelShape.transform.parent = wheel.transform;
+                    if (wheel.transform.localPosition.x > 0f)
+                        inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
+                }
             }
         }
     }
@@ -243,7 +253,7 @@ public class CarController : MonoBehaviour
     {
         foreach (WheelCollider wheel in wheels)
         {
-            if (wheelShape)
+            if (frontWheelShape && backWheelShape)
             {
                 Quaternion q;
                 Vector3 p;
