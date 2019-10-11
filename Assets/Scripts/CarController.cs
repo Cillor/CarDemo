@@ -15,13 +15,17 @@ public class CarController : MonoBehaviour
     private Rigidbody rb;
     private float wheelsTotalRadius;
     private float transmissionEfficiency = 0.7f;
-    public float outputEngineForce;
+    private float outputEngineForce;
     private float normalDrag;
     private bool isAcceleratorPressed;
     private float revolutionsFactor = 60;
     private float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
+    float realSteeringSensitivity, realAcceleratorSensitivity;
     [HideInInspector] public Gears gear;
 
+    public bool isKeyboardAndMouseEnabled;
+    public float userSteeringSensitivity;
+    public float userAcceleratorSensitivity;
     public float maxSteerAngle = 30;
     public GameObject frontWheelShape, backWheelShape;
     [Space] public AnimationCurve engineTorque;
@@ -86,10 +90,20 @@ public class CarController : MonoBehaviour
 
     void GetInput()
     {
-        steeringWheelInput = Input.GetAxis("SteeringWheel");
-        acceleratorInput = Input.GetAxis("Accelerator");
+        if (isKeyboardAndMouseEnabled)
+        {
+            GetMouseSteeringInput();
+            GetMouseAcceleratorInput();
+        }
+        else
+        {
+            steeringWheelInput = Input.GetAxis("SteeringWheel");
+            acceleratorInput = Input.GetAxis("Accelerator");
+        }
+
         if (FuelConsumption.fuelInTank < 0)
             acceleratorInput = 0;
+
         brakeInput = Input.GetAxis("Brake");
         isHandbrakePressed = Input.GetButton("HandBrake");
 
@@ -99,6 +113,29 @@ public class CarController : MonoBehaviour
             isAcceleratorPressed = false;
     }
 
+    void GetMouseSteeringInput()
+    {
+        realSteeringSensitivity = userSteeringSensitivity / 100;
+        if (Input.GetMouseButton(1))
+        {
+            steeringWheelInput = 0;
+        }
+        else
+        {
+            steeringWheelInput += Input.GetAxis("Mouse X") * realSteeringSensitivity;
+            steeringWheelInput = Mathf.Clamp(steeringWheelInput, -1, 1);
+        }
+    }
+
+    void GetMouseAcceleratorInput()
+    {
+        realAcceleratorSensitivity = userAcceleratorSensitivity / 100;
+        if (!Input.GetMouseButton(0))
+        {
+            acceleratorInput += Input.GetAxis("Mouse Y") * realAcceleratorSensitivity;
+            acceleratorInput = Mathf.Clamp(acceleratorInput, 0, 1);
+        }
+    }
     void GearChange()
     {
         if (Input.GetButtonDown("GearUp"))
@@ -213,7 +250,7 @@ public class CarController : MonoBehaviour
     void Engine()
     {
         engineRPM = CalculateEngineRPM(gear.actual);
-        engineRPM *= Mathf.Lerp(.8f, 1f, Input.GetAxis("Accelerator"));
+        engineRPM *= Mathf.Lerp(.8f, 1f, acceleratorInput);
 
         outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wheelsTotalRadius;
 
