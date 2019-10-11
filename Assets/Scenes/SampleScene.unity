@@ -6362,55 +6362,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &403359918
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  active: 1
-  m_AdvancedMode: 0
-  rotation:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-    max: 360
-  skyIntensityMode:
-    m_OverrideState: 0
-    m_Value: 0
-  exposure:
-    m_OverrideState: 0
-    m_Value: 4
-  multiplier:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  upperHemisphereLuxValue:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  desiredLuxValue:
-    m_OverrideState: 0
-    m_Value: 20000
-  updateMode:
-    m_OverrideState: 0
-    m_Value: 0
-  updatePeriod:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-  includeSunInBaking:
-    m_OverrideState: 0
-    m_Value: 0
-  hdriSky:
-    m_OverrideState: 0
-    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &431709097
 GameObject:
   m_ObjectHideFlags: 0
@@ -6547,14 +6498,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 389f71dbea2e164428c70bc426481832, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1653037913}
-  distance: 8
-  height: 5
+  distance: 6
+  height: 3
   heightDamping: 2
   lookAtHeight: 0.4
   parentRigidbody: {fileID: 1653037912}
@@ -6794,7 +6745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Profile: {fileID: 11400000, guid: dab0766de4a4b5349b80ce1a86555414, type: 2}
   m_StaticLightingSkyUniqueID: 1
-  m_SkySettings: {fileID: 403359918}
+  m_SkySettings: {fileID: 1063660764}
   m_SkySettingsFromProfile: {fileID: -532325519277291568, guid: dab0766de4a4b5349b80ce1a86555414,
     type: 2}
 --- !u!114 &591280447
@@ -7199,6 +7150,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72a2f6ada5fe0f74d9c12e6ee7dfb4f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1063660764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  m_AdvancedMode: 0
+  rotation:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+    max: 360
+  skyIntensityMode:
+    m_OverrideState: 0
+    m_Value: 0
+  exposure:
+    m_OverrideState: 0
+    m_Value: 4
+  multiplier:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  upperHemisphereLuxValue:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  desiredLuxValue:
+    m_OverrideState: 0
+    m_Value: 20000
+  updateMode:
+    m_OverrideState: 0
+    m_Value: 0
+  updatePeriod:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+  includeSunInBaking:
+    m_OverrideState: 0
+    m_Value: 0
+  hdriSky:
+    m_OverrideState: 0
+    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &1077847224
 GameObject:
   m_ObjectHideFlags: 0
@@ -7620,6 +7620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0abe65983de0c4047add043371d42d00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  outputEngineForce: 0
   maxSteerAngle: 30
   frontWheelShape: {fileID: -927199367670048503, guid: 014e5882bcd3e8742ad73c80908ce028,
     type: 3}
@@ -7676,13 +7677,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  engineIdle: 1000
+  engineIdle: 1200
   engineRPMLimit: 14001
-  brakeTorque: 100000
+  brakeTorque: 30000
   handBrakeTorque: 1000000
   slowingDownTorque: 900
   slowingDownDrag: 0.3
-  finalDriveRatio: 0.9
+  finalDriveRatio: 1.3
   gearRatio:
   - -8
   - 0

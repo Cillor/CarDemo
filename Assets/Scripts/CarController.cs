@@ -15,7 +15,7 @@ public class CarController : MonoBehaviour
     private Rigidbody rb;
     private float wheelsTotalRadius;
     private float transmissionEfficiency = 0.7f;
-    private float outputEngineForce;
+    public float outputEngineForce;
     private float normalDrag;
     private bool isAcceleratorPressed;
     private float revolutionsFactor = 60;
@@ -213,7 +213,7 @@ public class CarController : MonoBehaviour
     void Engine()
     {
         engineRPM = CalculateEngineRPM(gear.actual);
-        engineRPM *= Mathf.Lerp(.2f, 1f, Input.GetAxis("Accelerator"));
+        engineRPM *= Mathf.Lerp(.8f, 1f, Input.GetAxis("Accelerator"));
 
         outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wheelsTotalRadius;
 
