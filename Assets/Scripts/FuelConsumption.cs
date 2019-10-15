@@ -32,6 +32,6 @@ public class FuelConsumption : MonoBehaviour
         if (fuelInTank > 0)
             fuelInTank -= (litersConsumptionPerSecond * Time.deltaTime);
 
-        Debug.Log(fuelInTank);
+        //Debug.Log(fuelInTank);
     }
 }

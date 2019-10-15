@@ -253,8 +253,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0.6, z: 0}
   m_Radius: 0.42
   m_SuspensionSpring:
-    spring: 14905.244
-    damper: 2384.839
+    spring: 14905.211
+    damper: 2384.8337
     targetPosition: 0.5
   m_SuspensionDistance: 0.8
   m_ForceAppPointDistance: 0.89
@@ -6406,55 +6406,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &436556481
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  active: 1
-  m_AdvancedMode: 0
-  rotation:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-    max: 360
-  skyIntensityMode:
-    m_OverrideState: 0
-    m_Value: 0
-  exposure:
-    m_OverrideState: 0
-    m_Value: 4
-  multiplier:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  upperHemisphereLuxValue:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  desiredLuxValue:
-    m_OverrideState: 0
-    m_Value: 20000
-  updateMode:
-    m_OverrideState: 0
-    m_Value: 0
-  updatePeriod:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-  includeSunInBaking:
-    m_OverrideState: 0
-    m_Value: 0
-  hdriSky:
-    m_OverrideState: 0
-    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -6794,7 +6745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Profile: {fileID: 11400000, guid: dab0766de4a4b5349b80ce1a86555414, type: 2}
   m_StaticLightingSkyUniqueID: 1
-  m_SkySettings: {fileID: 436556481}
+  m_SkySettings: {fileID: 1187339005}
   m_SkySettingsFromProfile: {fileID: -532325519277291568, guid: dab0766de4a4b5349b80ce1a86555414,
     type: 2}
 --- !u!114 &591280447
@@ -7167,8 +7118,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0.6, z: 0}
   m_Radius: 0.42
   m_SuspensionSpring:
-    spring: 12094.757
-    damper: 1935.1611
+    spring: 12094.797
+    damper: 1935.1676
     targetPosition: 0.5
   m_SuspensionDistance: 0.8
   m_ForceAppPointDistance: 0.89
@@ -7276,6 +7227,55 @@ RectTransform:
   m_AnchoredPosition: {x: -307, y: -70}
   m_SizeDelta: {x: 527.7, y: 60.6}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1187339005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  m_AdvancedMode: 0
+  rotation:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+    max: 360
+  skyIntensityMode:
+    m_OverrideState: 0
+    m_Value: 0
+  exposure:
+    m_OverrideState: 0
+    m_Value: 4
+  multiplier:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  upperHemisphereLuxValue:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  desiredLuxValue:
+    m_OverrideState: 0
+    m_Value: 20000
+  updateMode:
+    m_OverrideState: 0
+    m_Value: 0
+  updatePeriod:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+  includeSunInBaking:
+    m_OverrideState: 0
+    m_Value: 0
+  hdriSky:
+    m_OverrideState: 0
+    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &1209440995
 GameObject:
   m_ObjectHideFlags: 0
@@ -7620,11 +7620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0abe65983de0c4047add043371d42d00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringWheelInput: 0
-  acceleratorInput: 0
-  brakeInput: 0
-  outputEngineForce: 0
-  isKeyboardAndMouseEnabled: 1
+  isKeyboardAndMouseEnabled: 0
   userSteeringSensitivity: 5
   userAcceleratorSensitivity: 10
   maxSteerAngle: 30
@@ -7646,30 +7642,30 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1000
-      value: 1200
-      inSlope: 0.036842536
-      outSlope: 0.036842536
+      value: 650
+      inSlope: 0.007191959
+      outSlope: 0.007191959
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.15911344
+      outWeight: 0.17315744
     - serializedVersion: 3
       time: 12650
-      value: 1600
-      inSlope: 0.0138662355
-      outSlope: 0.0138662355
+      value: 720
+      inSlope: 0.0019620834
+      outSlope: 0.0019620834
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.11198598
+      inWeight: 0.11745683
       outWeight: 1
     - serializedVersion: 3
-      time: 14000
-      value: 1000
-      inSlope: -0.87476844
-      outSlope: -0.87476844
+      time: 13978.755
+      value: 510
+      inSlope: -0.055792287
+      outSlope: -0.055792287
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.1999074
+      inWeight: 0.3989652
       outWeight: 0
     - serializedVersion: 3
       time: 14001
@@ -7685,13 +7681,13 @@ MonoBehaviour:
     m_RotationOrder: 4
   engineIdle: 1200
   engineRPMLimit: 14001
-  brakeTorque: 30000
-  handBrakeTorque: 1000000
-  slowingDownTorque: 900
-  slowingDownDrag: 0.3
-  finalDriveRatio: 1.3
+  brakeTorque: 250
+  handBrakeTorque: 4000
+  slowingDownTorque: 200
+  slowingDownDrag: 0.15
+  finalDriveRatio: 1
   gearRatio:
-  - -8
+  - -4
   - 0
   - 3.32
   - 2.16
@@ -7740,7 +7736,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1653037909}
   m_LocalRotation: {x: -0, y: 0.30867243, z: -0, w: 0.95116836}
-  m_LocalPosition: {x: 195.81, y: 127.69, z: 3.28}
+  m_LocalPosition: {x: 328.4, y: 125.5, z: -92.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 534669905}
@@ -7913,7 +7909,7 @@ MonoBehaviour:
   frontWheelR: {fileID: 74001382}
   backWheelL: {fileID: 1001210979}
   backWheelR: {fileID: 1920590670}
-  antiRoll: 12000
+  antiRoll: 125
 --- !u!114 &1653037919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8409,8 +8405,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0.6, z: 0}
   m_Radius: 0.42
   m_SuspensionSpring:
-    spring: 14905.205
-    damper: 2384.8328
+    spring: 14905.201
+    damper: 2384.8323
     targetPosition: 0.5
   m_SuspensionDistance: 0.8
   m_ForceAppPointDistance: 0.89
@@ -8556,8 +8552,8 @@ WheelCollider:
   m_Center: {x: 0, y: 0.6, z: 0}
   m_Radius: 0.42
   m_SuspensionSpring:
-    spring: 12094.796
-    damper: 1935.1672
+    spring: 12094.791
+    damper: 1935.1666
     targetPosition: 0.5
   m_SuspensionDistance: 0.8
   m_ForceAppPointDistance: 0.89
@@ -8601,11 +8597,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 75
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 112.5
+      value: 225
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalRotation.x
@@ -8669,11 +8665,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400004, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 75
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 400004, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 112.5
+      value: 225
       objectReference: {fileID: 0}
     - target: {fileID: 400004, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalRotation.x
@@ -8693,11 +8689,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.x
-      value: 75
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalScale.y
-      value: 112.5
+      value: 225
       objectReference: {fileID: 0}
     - target: {fileID: 400006, guid: c3480d65923bc3e469ae217870afae6a, type: 3}
       propertyPath: m_LocalRotation.x

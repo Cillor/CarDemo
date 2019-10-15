@@ -238,6 +238,12 @@ public class CarController : MonoBehaviour
                 }
                 break;
         }
+
+        foreach (WheelCollider wheel in wheels)
+        {
+            if (wheel.rpm > 2500 || wheel.rpm < -2000)
+                wheel.motorTorque = 0;
+        }
     }
 
     void CalculateCarSpeed()
