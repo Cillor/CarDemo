@@ -19,32 +19,29 @@ public class StiffnessValueDeterminer : MonoBehaviour
             if (wheel.GetGroundHit(out hit))
             {
                 WheelFrictionCurve fFriction = wheel.forwardFriction;
-                fFriction.stiffness = hit.collider.material.staticFriction - DetecSlip();
+                fFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
                 wheel.forwardFriction = fFriction;
                 WheelFrictionCurve sFriction = wheel.sidewaysFriction;
-                sFriction.stiffness = hit.collider.material.staticFriction - DetecSlip();
+                sFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
                 wheel.sidewaysFriction = sFriction;
             }
         }
+        //DetecSlip();
     }
 
-    float DetecSlip()
+    void DetecSlip()
     {
         WheelHit hit;
         if (wheel.GetGroundHit(out hit))
         {
-            if (hit.forwardSlip > 0.7f)
+            if (hit.forwardSlip > 0.8f)
             {
                 Debug.Log("Acceleration Slip");
-                return hit.forwardSlip;
             }
-            if (hit.forwardSlip < -0.5f)
+            if (hit.forwardSlip < -0.8f)
             {
                 Debug.Log("Braking Slip");
-                return Mathf.Abs(hit.forwardSlip);
             }
-            return 0;
         }
-        return 0;
     }
 }

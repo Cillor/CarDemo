@@ -6,31 +6,30 @@ public enum TractionType { AWD, RWD, FWD }
 
 public class CarController : MonoBehaviour
 {
+    private const int carMiddlePosition = 0;
     public static bool isHandbrakePressed;
-    public static float carSpeed, engineRPM;
+    public static float carSpeedInMetersPerSecond, engineRPM;
     private WheelCollider[] wheels;
     private float steeringWheelInput, acceleratorInput, brakeInput;
     private float gearDriveRatio;
     private float wheelRPM;
     private Rigidbody rb;
     private float wheelsTotalRadius;
-    private float transmissionEfficiency = 0.7f;
+    private const float transmissionEfficiency = 0.7f;
     private float outputEngineForce;
     private float normalDrag;
     private bool isAcceleratorPressed;
-    private float revolutionsFactor = 60;
-    private float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
-    float realSteeringSensitivity, realAcceleratorSensitivity;
+    private const float revolutionsFactor = 60;
+    private const float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
+
     [HideInInspector] public Gears gear;
 
-    public bool isKeyboardAndMouseEnabled;
-    public float userSteeringSensitivity;
-    public float userAcceleratorSensitivity;
     public float maxSteerAngle = 30;
     public GameObject frontWheelShape, backWheelShape;
     [Space] public AnimationCurve engineTorque;
     public float engineIdle, engineRPMLimit;
     public float brakeTorque, handBrakeTorque, slowingDownTorque, slowingDownDrag;
+    [Range(0, 1)] public float frontBrakeBias;
     public float finalDriveRatio;
     public float[] gearRatio;
 
@@ -61,6 +60,7 @@ public class CarController : MonoBehaviour
         Engine();
         Accelerate();
         CalculateCarSpeed();
+        TractionControl();
         UpdateWheelPoses();
     }
 
@@ -70,18 +70,22 @@ public class CarController : MonoBehaviour
         {
             if (frontWheelShape && backWheelShape)
             {
-                if (wheel.transform.localPosition.z > 0)
+                bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
+                if (isFrontWheels)
                 {
                     GameObject inSceneWheelShape = GameObject.Instantiate(frontWheelShape);
                     inSceneWheelShape.transform.parent = wheel.transform;
-                    if (wheel.transform.localPosition.x > 0f)
+
+                    bool isRightWheel = wheel.transform.localPosition.x > carMiddlePosition;
+                    if (isRightWheel)
                         inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
                 }
                 else
                 {
                     GameObject inSceneWheelShape = GameObject.Instantiate(backWheelShape);
                     inSceneWheelShape.transform.parent = wheel.transform;
-                    if (wheel.transform.localPosition.x > 0f)
+                    bool isRightWheel = wheel.transform.localPosition.x > carMiddlePosition;
+                    if (isRightWheel)
                         inSceneWheelShape.transform.localScale = new Vector3(inSceneWheelShape.transform.localScale.x * -1f, inSceneWheelShape.transform.localScale.y, inSceneWheelShape.transform.localScale.z);
                 }
             }
@@ -90,16 +94,8 @@ public class CarController : MonoBehaviour
 
     void GetInput()
     {
-        if (isKeyboardAndMouseEnabled)
-        {
-            GetMouseSteeringInput();
-            GetMouseAcceleratorInput();
-        }
-        else
-        {
-            steeringWheelInput = Input.GetAxis("SteeringWheel");
-            acceleratorInput = Input.GetAxis("Accelerator");
-        }
+        steeringWheelInput = Input.GetAxis("SteeringWheel");
+        acceleratorInput = Input.GetAxis("Accelerator");
 
         if (FuelConsumption.fuelInTank < 0)
             acceleratorInput = 0;
@@ -113,29 +109,6 @@ public class CarController : MonoBehaviour
             isAcceleratorPressed = false;
     }
 
-    void GetMouseSteeringInput()
-    {
-        realSteeringSensitivity = userSteeringSensitivity / 100;
-        if (Input.GetMouseButton(1))
-        {
-            steeringWheelInput = 0;
-        }
-        else
-        {
-            steeringWheelInput += Input.GetAxis("Mouse X") * realSteeringSensitivity;
-            steeringWheelInput = Mathf.Clamp(steeringWheelInput, -1, 1);
-        }
-    }
-
-    void GetMouseAcceleratorInput()
-    {
-        realAcceleratorSensitivity = userAcceleratorSensitivity / 100;
-        if (!Input.GetMouseButton(0))
-        {
-            acceleratorInput += Input.GetAxis("Mouse Y") * realAcceleratorSensitivity;
-            acceleratorInput = Mathf.Clamp(acceleratorInput, 0, 1);
-        }
-    }
     void GearChange()
     {
         if (Input.GetButtonDown("GearUp"))
@@ -159,7 +132,7 @@ public class CarController : MonoBehaviour
     public float CalculateEngineRPM(int _desiredGear)
     {
         float desiredGearDriveRatio = gearRatio[_desiredGear] * finalDriveRatio;
-        wheelRPM = carSpeed / wheelsTotalRadius;
+        wheelRPM = carSpeedInMetersPerSecond / wheelsTotalRadius;
         float newEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
         newEngineRPM = Mathf.Abs(newEngineRPM);
         if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0) && FuelConsumption.fuelInTank > 0)
@@ -176,7 +149,8 @@ public class CarController : MonoBehaviour
 
         foreach (WheelCollider wheel in wheels)
         {
-            if (wheel.transform.localPosition.z > 0)
+            bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
+            if (isFrontWheels)
                 wheel.steerAngle = steeringAngle;
         }
     }
@@ -187,7 +161,8 @@ public class CarController : MonoBehaviour
         {
             foreach (WheelCollider wheel in wheels)
             {
-                if (wheel.transform.localPosition.z < 0)
+                bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
+                if (isBackWheels)
                 {
                     WheelFrictionCurve fFriction = wheel.forwardFriction;
                     fFriction.stiffness = slipForwardFriction;
@@ -205,7 +180,21 @@ public class CarController : MonoBehaviour
         {
             foreach (WheelCollider wheel in wheels)
             {
-                wheel.brakeTorque = brakeTorque * brakeInput;
+                float frontAxleBrakeTorque = brakeTorque * frontBrakeBias;
+                float individualFrontBrakeTorque = frontAxleBrakeTorque / 2;
+                float rearBrakeBias = 1 - frontBrakeBias;
+                float rearAxleBrakeTorque = brakeTorque * rearBrakeBias;
+                float individualRearBrakeTorque = rearAxleBrakeTorque / 2;
+
+                bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
+                if (isFrontWheels)
+                {
+                    wheel.brakeTorque = individualFrontBrakeTorque * brakeInput;
+                }
+                else
+                {
+                    wheel.brakeTorque = individualRearBrakeTorque * brakeInput;
+                }
             }
         }
     }
@@ -226,37 +215,35 @@ public class CarController : MonoBehaviour
             case TractionType.RWD:
                 foreach (WheelCollider wheel in wheels)
                 {
-                    if (wheel.transform.localPosition.z < 0)
+                    bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
+                    if (isBackWheels)
                         wheel.motorTorque = outputEngineForce * acceleratorInput;
                 }
                 break;
             case TractionType.FWD:
                 foreach (WheelCollider wheel in wheels)
                 {
-                    if (wheel.transform.localPosition.z > 0)
+                    bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
+                    if (isFrontWheels)
                         wheel.motorTorque = outputEngineForce * acceleratorInput;
                 }
                 break;
-        }
-
-        foreach (WheelCollider wheel in wheels)
-        {
-            if (wheel.rpm > 2500 || wheel.rpm < -2000)
-                wheel.motorTorque = 0;
         }
     }
 
     void CalculateCarSpeed()
     {
-        float xSpeed = rb.velocity.x;
-        float zSpeed = rb.velocity.z;
-        carSpeed = Mathf.Sqrt(xSpeed * xSpeed + zSpeed * zSpeed);
+        float sidewaysSpeed = rb.velocity.x;
+        float forwardSpeed = rb.velocity.z;
+        carSpeedInMetersPerSecond = Mathf.Sqrt(sidewaysSpeed * sidewaysSpeed + forwardSpeed * forwardSpeed);
     }
 
     void Engine()
     {
         engineRPM = CalculateEngineRPM(gear.actual);
-        engineRPM *= Mathf.Lerp(.8f, 1f, acceleratorInput);
+        const float minimumEngineRPMMultiplier = .8f;
+        const float maximumEngineRPMMultiplier = 1f;
+        engineRPM *= Mathf.Lerp(minimumEngineRPMMultiplier, maximumEngineRPMMultiplier, acceleratorInput);
 
         outputEngineForce = engineTorque.Evaluate(engineRPM) * gearDriveRatio * transmissionEfficiency / wheelsTotalRadius;
 
@@ -282,13 +269,29 @@ public class CarController : MonoBehaviour
 
     void DeccelerateCar()
     {
-        if (!isAcceleratorPressed && carSpeed > 1f)
+        if (!isAcceleratorPressed && carSpeedInMetersPerSecond > 1f)
         {
             rb.drag = slowingDownDrag;
         }
         else
         {
             rb.drag = normalDrag;
+        }
+    }
+
+    void TractionControl()
+    {
+        foreach (WheelCollider wheel in wheels)
+        {
+            float carSpeedInMetersPerMinutes = carSpeedInMetersPerSecond * 60;
+            float wheelCircunference = 2 * Mathf.PI * wheel.radius;
+            float theoreticalWheelRPM = carSpeedInMetersPerMinutes / wheelCircunference;
+            const float wheelRPMValueModifier = 500;
+            float acceptableWheelRPM = theoreticalWheelRPM + wheelRPMValueModifier;
+
+            bool isWheelRPMHigherThanAcceptableRPM = Mathf.Abs(wheel.rpm) > acceptableWheelRPM;
+            if (isWheelRPMHigherThanAcceptableRPM)
+                wheel.motorTorque = 0;
         }
     }
 

@@ -26,7 +26,7 @@ public class CarHUD : MonoBehaviour
     {
         engineRPMText.text = Helper.Round(CarController.engineRPM, 0).ToString();
         actualGearText.text = (carControllerScript.gear.actual - 1).ToString();
-        speedText.text = Helper.Round(CarController.carSpeed * 3.6f, 2) + "km/h";
+        speedText.text = Helper.Round(CarController.carSpeedInMetersPerSecond * 3.6f, 2) + "km/h";
     }
 
     public void ChangeRPMNeedle()

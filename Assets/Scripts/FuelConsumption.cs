@@ -8,7 +8,7 @@ public class FuelConsumption : MonoBehaviour
     private float fuelMetering, acceleratorInput;
     private float litersConsumptionPerSecond;
     public int cylindersQuantity = 6, rpmPerInjection = 3;
-    public float tankCapacityInLiters = 90, topSpeed = 75, desiredConsumption = 600;
+    public float tankCapacityInLiters = 90, topSpeedInMetersPerSecond = 84, desiredConsumptionInMetersPerLiter = 700;
 
     // Start is called before the first frame update
     void Start()
@@ -21,7 +21,7 @@ public class FuelConsumption : MonoBehaviour
     {
         acceleratorInput = Input.GetAxis("Accelerator");
         acceleratorInput = Mathf.Clamp(.1f, 1f, acceleratorInput);
-        fuelMetering = (rpmPerInjection * 1000 * 60 * 825 * topSpeed) / (cylindersQuantity * CarController.engineRPM * desiredConsumption);
+        fuelMetering = (rpmPerInjection * 1000 * 60 * 825 * topSpeedInMetersPerSecond) / (cylindersQuantity * CarController.engineRPM * desiredConsumptionInMetersPerLiter);
         fuelMetering *= acceleratorInput;
 
         if (CarController.engineRPM == 0)

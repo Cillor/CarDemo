@@ -264,7 +264,7 @@ WheelCollider:
     m_ExtremumSlip: 0.4
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 0.4
     m_Stiffness: 2
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
@@ -6498,7 +6498,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 389f71dbea2e164428c70bc426481832, type: 3}
   m_Name: 
@@ -6745,7 +6745,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Profile: {fileID: 11400000, guid: dab0766de4a4b5349b80ce1a86555414, type: 2}
   m_StaticLightingSkyUniqueID: 1
-  m_SkySettings: {fileID: 1187339005}
+  m_SkySettings: {fileID: 716689480}
   m_SkySettingsFromProfile: {fileID: -532325519277291568, guid: dab0766de4a4b5349b80ce1a86555414,
     type: 2}
 --- !u!114 &591280447
@@ -6779,6 +6779,55 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &716689480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  active: 1
+  m_AdvancedMode: 0
+  rotation:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+    max: 360
+  skyIntensityMode:
+    m_OverrideState: 0
+    m_Value: 0
+  exposure:
+    m_OverrideState: 0
+    m_Value: 4
+  multiplier:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  upperHemisphereLuxValue:
+    m_OverrideState: 0
+    m_Value: 1
+    min: 0
+  desiredLuxValue:
+    m_OverrideState: 0
+    m_Value: 20000
+  updateMode:
+    m_OverrideState: 0
+    m_Value: 0
+  updatePeriod:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+  includeSunInBaking:
+    m_OverrideState: 0
+    m_Value: 0
+  hdriSky:
+    m_OverrideState: 0
+    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &815006808
 GameObject:
   m_ObjectHideFlags: 0
@@ -7129,7 +7178,7 @@ WheelCollider:
     m_ExtremumSlip: 0.4
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 0.4
     m_Stiffness: 2
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
@@ -7227,55 +7276,6 @@ RectTransform:
   m_AnchoredPosition: {x: -307, y: -70}
   m_SizeDelta: {x: 527.7, y: 60.6}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1187339005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59b6606ef2548734bb6d11b9d160bc7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  active: 1
-  m_AdvancedMode: 0
-  rotation:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-    max: 360
-  skyIntensityMode:
-    m_OverrideState: 0
-    m_Value: 0
-  exposure:
-    m_OverrideState: 0
-    m_Value: 4
-  multiplier:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  upperHemisphereLuxValue:
-    m_OverrideState: 0
-    m_Value: 1
-    min: 0
-  desiredLuxValue:
-    m_OverrideState: 0
-    m_Value: 20000
-  updateMode:
-    m_OverrideState: 0
-    m_Value: 0
-  updatePeriod:
-    m_OverrideState: 0
-    m_Value: 0
-    min: 0
-  includeSunInBaking:
-    m_OverrideState: 0
-    m_Value: 0
-  hdriSky:
-    m_OverrideState: 0
-    m_Value: {fileID: 8900000, guid: ed53b0929ac35b54aa237a3caeb428df, type: 3}
 --- !u!1 &1209440995
 GameObject:
   m_ObjectHideFlags: 0
@@ -7620,10 +7620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0abe65983de0c4047add043371d42d00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isKeyboardAndMouseEnabled: 0
-  userSteeringSensitivity: 5
-  userAcceleratorSensitivity: 10
-  maxSteerAngle: 30
+  maxSteerAngle: 20
   frontWheelShape: {fileID: -927199367670048503, guid: 014e5882bcd3e8742ad73c80908ce028,
     type: 3}
   backWheelShape: {fileID: -927199367670048503, guid: 1b5598d6734956941b11e895dd614845,
@@ -7642,7 +7639,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1000
-      value: 650
+      value: 1000
       inSlope: 0.007191959
       outSlope: 0.007191959
       tangentMode: 0
@@ -7651,7 +7648,7 @@ MonoBehaviour:
       outWeight: 0.17315744
     - serializedVersion: 3
       time: 12650
-      value: 720
+      value: 1100
       inSlope: 0.0019620834
       outSlope: 0.0019620834
       tangentMode: 0
@@ -7660,7 +7657,7 @@ MonoBehaviour:
       outWeight: 1
     - serializedVersion: 3
       time: 13978.755
-      value: 510
+      value: 900
       inSlope: -0.055792287
       outSlope: -0.055792287
       tangentMode: 0
@@ -7681,20 +7678,21 @@ MonoBehaviour:
     m_RotationOrder: 4
   engineIdle: 1200
   engineRPMLimit: 14001
-  brakeTorque: 250
+  brakeTorque: 5000
   handBrakeTorque: 4000
   slowingDownTorque: 200
   slowingDownDrag: 0.15
-  finalDriveRatio: 1
+  frontBrakeBias: 0.6
+  finalDriveRatio: 1.1
   gearRatio:
   - -4
   - 0
   - 3.32
   - 2.16
-  - 1.75
   - 1.33
-  - 1.07
-  - 0.87
+  - 1
+  - 0.8
+  - 0.65
   tractionType: 1
 --- !u!114 &1653037911
 MonoBehaviour:
@@ -7909,7 +7907,7 @@ MonoBehaviour:
   frontWheelR: {fileID: 74001382}
   backWheelL: {fileID: 1001210979}
   backWheelR: {fileID: 1920590670}
-  antiRoll: 125
+  antiRoll: 750
 --- !u!114 &1653037919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7925,8 +7923,8 @@ MonoBehaviour:
   cylindersQuantity: 6
   rpmPerInjection: 3
   tankCapacityInLiters: 90
-  topSpeed: 75
-  desiredConsumption: 700
+  topSpeedInMetersPerSecond: 84
+  desiredConsumptionInMetersPerLiter: 700
 --- !u!1 &1703661708
 GameObject:
   m_ObjectHideFlags: 0
@@ -8416,7 +8414,7 @@ WheelCollider:
     m_ExtremumSlip: 0.4
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 0.4
     m_Stiffness: 2
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2
@@ -8563,7 +8561,7 @@ WheelCollider:
     m_ExtremumSlip: 0.4
     m_ExtremumValue: 1
     m_AsymptoteSlip: 0.8
-    m_AsymptoteValue: 0.5
+    m_AsymptoteValue: 0.4
     m_Stiffness: 2
   m_SidewaysFriction:
     m_ExtremumSlip: 0.2

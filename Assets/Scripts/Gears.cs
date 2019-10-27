@@ -12,7 +12,7 @@
 
     public void GearUp()
     {
-        if (actual == rear && CarController.carSpeed < .5f)
+        if (actual == rear && CarController.carSpeedInMetersPerSecond < .5f)
         {
             actual++;
         }
@@ -24,7 +24,7 @@
 
     public void GearDown()
     {
-        if (actual == neutral && CarController.carSpeed < .5f)
+        if (actual == neutral && CarController.carSpeedInMetersPerSecond < .5f)
         {
             actual--;
         }
