@@ -9,10 +9,12 @@ public class FuelConsumption : MonoBehaviour
     private float litersConsumptionPerSecond;
     public int cylindersQuantity = 6, rpmPerInjection = 3;
     public float tankCapacityInLiters = 90, topSpeedInMetersPerSecond = 84, desiredConsumptionInMetersPerLiter = 700;
+    Drivetrain drivetrain;
 
     // Start is called before the first frame update
     void Start()
     {
+        drivetrain = GetComponent<Drivetrain>();
         fuelInTank = tankCapacityInLiters;
     }
 
@@ -21,13 +23,13 @@ public class FuelConsumption : MonoBehaviour
     {
         acceleratorInput = Input.GetAxis("Accelerator");
         acceleratorInput = Mathf.Clamp(.1f, 1f, acceleratorInput);
-        fuelMetering = (rpmPerInjection * 1000 * 60 * 825 * topSpeedInMetersPerSecond) / (cylindersQuantity * CarController.engineRPM * desiredConsumptionInMetersPerLiter);
+        fuelMetering = (rpmPerInjection * 1000 * 60 * 825 * topSpeedInMetersPerSecond) / (cylindersQuantity * drivetrain.engine.RPM * desiredConsumptionInMetersPerLiter);
         fuelMetering *= acceleratorInput;
 
-        if (CarController.engineRPM == 0)
+        if (drivetrain.engine.RPM == 0)
             litersConsumptionPerSecond = 0;
         else
-            litersConsumptionPerSecond = (cylindersQuantity * CarController.engineRPM * fuelMetering) / (rpmPerInjection * 1000 * 60 * 825) + 0.00001f;
+            litersConsumptionPerSecond = (cylindersQuantity * drivetrain.engine.RPM * fuelMetering) / (rpmPerInjection * 1000 * 60 * 825) + 0.00001f;
 
         if (fuelInTank > 0)
             fuelInTank -= (litersConsumptionPerSecond * Time.deltaTime);

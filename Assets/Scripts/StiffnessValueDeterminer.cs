@@ -13,18 +13,15 @@ public class StiffnessValueDeterminer : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!CarController.isHandbrakePressed)
+        WheelHit hit;
+        if (wheel.GetGroundHit(out hit))
         {
-            WheelHit hit;
-            if (wheel.GetGroundHit(out hit))
-            {
-                WheelFrictionCurve fFriction = wheel.forwardFriction;
-                fFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
-                wheel.forwardFriction = fFriction;
-                WheelFrictionCurve sFriction = wheel.sidewaysFriction;
-                sFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
-                wheel.sidewaysFriction = sFriction;
-            }
+            WheelFrictionCurve fFriction = wheel.forwardFriction;
+            fFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
+            wheel.forwardFriction = fFriction;
+            WheelFrictionCurve sFriction = wheel.sidewaysFriction;
+            sFriction.stiffness = hit.collider.material.staticFriction /*- DetecSlip()*/;
+            wheel.sidewaysFriction = sFriction;
         }
         //DetecSlip();
     }

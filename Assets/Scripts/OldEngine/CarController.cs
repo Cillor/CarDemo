@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,7 @@ public class CarController : MonoBehaviour
     public static bool isHandbrakePressed;
     public static float carSpeedInMetersPerSecond, engineRPM;
     private WheelCollider[] wheels;
-    private float steeringWheelInput, acceleratorInput, brakeInput;
+    private float steeringWheelInput, acceleratorInput, brakeInput, clutchInput;
     private float gearDriveRatio;
     private float wheelRPM;
     private Rigidbody rb;
@@ -18,7 +19,7 @@ public class CarController : MonoBehaviour
     private const float transmissionEfficiency = 0.7f;
     private float outputEngineForce;
     private float normalDrag;
-    private bool isAcceleratorPressed;
+    private bool isAcceleratorPressed, isClutchPressed, gearChangeAllowed;
     private const float revolutionsFactor = 60;
     private const float slipForwardFriction = 0.3f, slipSidewayFriction = 0.42f;
 
@@ -58,6 +59,7 @@ public class CarController : MonoBehaviour
         Steer();
         Brake();
         Engine();
+        Clutch();
         Accelerate();
         CalculateCarSpeed();
         TractionControl();
@@ -102,6 +104,7 @@ public class CarController : MonoBehaviour
 
         brakeInput = Input.GetAxis("Brake");
         isHandbrakePressed = Input.GetButton("HandBrake");
+        isClutchPressed = Input.GetButton("Clutch");
 
         if (acceleratorInput > 0)
             isAcceleratorPressed = true;
@@ -109,38 +112,115 @@ public class CarController : MonoBehaviour
             isAcceleratorPressed = false;
     }
 
+    bool isLastGearNeutral;
     void GearChange()
     {
-        if (Input.GetButtonDown("GearUp"))
+        if (gearChangeAllowed)
         {
-            gear.GearUp();
+            if (Input.GetButtonDown("GearUp"))
+            {
+                gear.GearUp();
 
-            gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
+                gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
+            }
+
+            if (Input.GetButtonDown("GearDown"))
+            {
+                gear.GearDown();
+
+                gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
+            }
         }
 
-        if (Input.GetButtonDown("GearDown"))
+        gear.LastGearInfo(Time.deltaTime);
+    }
+
+    float timeSinceGearWasNeutral;
+    float freeAndLockedRevvInterpolationTime;
+    public float CalculateEngineRPM(int _desiredGear)
+    {
+        if (isClutchPressed)
+            return ClutchDisk(_desiredGear);
+
+        if (_desiredGear == gear.neutral)
         {
-            if (CalculateEngineRPM(gear.actual - 1) > engineRPMLimit)
-                return;
-
-            gear.GearDown();
-
-            gearDriveRatio = gearRatio[gear.actual] * finalDriveRatio;
+            return FreeRevvEngineRPM();
+        }
+        else
+        {
+            if (gear.isLastGearNeutral)
+            {
+                return FreeAndLockedRevvInterpolation(_desiredGear);
+            }
+            else
+            {
+                freeAndLockedRevvInterpolationTime = 0;
+            }
+            return LockedRevvEngineRPM(_desiredGear);
         }
     }
 
-    public float CalculateEngineRPM(int _desiredGear)
+    float freeEngineRPM;
+    float FreeRevvEngineRPM()
+    {
+        float maxRPMAllowed = engineRPMLimit + 1000;
+
+        if (freeEngineRPM > engineRPMLimit)
+            freeEngineRPM -= 600;
+
+        if (isAcceleratorPressed)
+        {
+            freeEngineRPM += 6000f * Time.deltaTime;
+        }
+        else
+        {
+            freeEngineRPM -= 2000f * Time.deltaTime;
+        }
+
+        freeEngineRPM = Mathf.Clamp(freeEngineRPM, 0, maxRPMAllowed);
+
+        return freeEngineRPM;
+    }
+
+    float LockedRevvEngineRPM(int _desiredGear)
     {
         float desiredGearDriveRatio = gearRatio[_desiredGear] * finalDriveRatio;
         wheelRPM = carSpeedInMetersPerSecond / wheelsTotalRadius;
-        float newEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
-        newEngineRPM = Mathf.Abs(newEngineRPM);
-        if (newEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0) && FuelConsumption.fuelInTank > 0)
+        float lockedEngineRPM = wheelRPM * desiredGearDriveRatio * revolutionsFactor / 2 * Mathf.PI;
+        lockedEngineRPM = Mathf.Abs(lockedEngineRPM);
+        if (lockedEngineRPM < engineIdle && (_desiredGear == 2 || _desiredGear == 0) && FuelConsumption.fuelInTank > 0)
         {
-            newEngineRPM = engineIdle;
+            lockedEngineRPM = engineIdle;
         }
 
-        return newEngineRPM;
+        return lockedEngineRPM;
+    }
+
+    float ClutchDisk(int _desiredGear)
+    {
+        if (acceleratorInput > .5f)
+        {
+            if (engineRPM < engineRPMLimit)
+                return FreeRevvEngineRPM();
+
+            return LockedRevvEngineRPM(_desiredGear);
+        }
+        else
+            return LockedRevvEngineRPM(_desiredGear);
+    }
+
+    float FreeAndLockedRevvInterpolation(int _desiredGear)
+    {
+        if (gear.timeSinceGearWasNeutral < .5f)
+        {
+            return FreeRevvEngineRPM();
+        }
+        else
+        {
+            freeAndLockedRevvInterpolationTime += Time.deltaTime / 3.5f;
+            freeAndLockedRevvInterpolationTime = Mathf.Clamp(freeAndLockedRevvInterpolationTime, 0, 1);
+            return Mathf.Lerp(FreeRevvEngineRPM(), LockedRevvEngineRPM(_desiredGear), freeAndLockedRevvInterpolationTime);
+        }
     }
 
     void Steer()
@@ -209,7 +289,7 @@ public class CarController : MonoBehaviour
             case TractionType.AWD:
                 foreach (WheelCollider wheel in wheels)
                 {
-                    wheel.motorTorque = outputEngineForce * acceleratorInput;
+                    wheel.motorTorque = outputEngineForce * acceleratorInput * Helper.Normalize(gear.actual - 1) * clutchInput;
                 }
                 break;
             case TractionType.RWD:
@@ -217,7 +297,7 @@ public class CarController : MonoBehaviour
                 {
                     bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
                     if (isBackWheels)
-                        wheel.motorTorque = outputEngineForce * acceleratorInput;
+                        wheel.motorTorque = outputEngineForce * acceleratorInput * Helper.Normalize(gear.actual - 1) * clutchInput;
                 }
                 break;
             case TractionType.FWD:
@@ -225,9 +305,23 @@ public class CarController : MonoBehaviour
                 {
                     bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
                     if (isFrontWheels)
-                        wheel.motorTorque = outputEngineForce * acceleratorInput;
+                        wheel.motorTorque = outputEngineForce * acceleratorInput * Helper.Normalize(gear.actual - 1) * clutchInput;
                 }
                 break;
+        }
+    }
+
+    void Clutch()
+    {
+        if (isClutchPressed)
+        {
+            clutchInput = 0;
+            gearChangeAllowed = true;
+        }
+        else
+        {
+            clutchInput = 1;
+            gearChangeAllowed = false;
         }
     }
 
