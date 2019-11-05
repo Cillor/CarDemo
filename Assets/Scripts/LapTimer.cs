@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class LapTimer : MonoBehaviour
 {
-    public static float countdownStart = 3;
+    public static float countdownStart = 5;
     public Text countdownStartText, actualLapTimeText, bestLapTimeText;
     public List<GameObject> checkpointTriggers;
     int actualCheckpoint;

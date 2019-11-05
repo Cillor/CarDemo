@@ -10,9 +10,10 @@ public class Engine
     const float extraRPM = 500;
 
     const float rpmLoss = 2000;
-    bool acceleratorPressed, clutchEngaged;
+    bool acceleratorPressed, engineEngagedWithWheels;
     float acceleratorInput;
     float deltaTime;
+    float carSpeedMS;
 
     Gearbox gearbox;
 
@@ -20,15 +21,16 @@ public class Engine
     {
         gearbox = _gearbox;
     }
-    public void UserInput(float _acceleratorInput, bool _acceleratorPressed, bool _clutchPressed)
+    public void UserInput(float _acceleratorInput, bool _acceleratorPressed, bool _engineEngagedWithWheels)
     {
         acceleratorInput = _acceleratorInput;
         acceleratorPressed = _acceleratorPressed;
-        clutchEngaged = !_clutchPressed;
+        engineEngagedWithWheels = _engineEngagedWithWheels;
     }
 
-    public void UpdateEngine(float _pilotShaftSpeed, float _deltaTime)
+    public void UpdateEngine(float _carSpeedMS, float _pilotShaftSpeed, float _deltaTime)
     {
+        carSpeedMS = _carSpeedMS;
         bool engineBroken = damage > 100;
         if (engineBroken)
         {
@@ -47,8 +49,6 @@ public class Engine
         {
             if (engineRPM < maxRPMAllowed)
                 engineRPM += 5000 * EngineShaftFriction(maxRPMAllowed) * deltaTime;
-            /* if (engineRPM > RPMLimit)
-                engineRPM -= 2000 * EngineShaftInertia(maxRPMAllowed) * deltaTime; */
         }
         else
         {
@@ -59,10 +59,15 @@ public class Engine
         if (engineRPM > RPMLimit)
             engineRPM -= 200;
 
-        if (clutchEngaged)
+        if (engineEngagedWithWheels)
         {
             RPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
                                 Helper.Clamp(acceleratorInput, .45f, .55f));
+            //Concerta essa bagunça aqui
+            engineRPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
+                                Helper.Clamp(carSpeedMS / 60, 0, .1f));
+            //Vc dividiu isso por 60 pra tentar fazer com que o Lerp fosse aumentando
+            //de acordo com a velocidade
         }
         else
             RPM = engineRPM;
@@ -75,6 +80,8 @@ public class Engine
         float xValue = Math.Abs(10 * rpmPercent + .2f);
         float vOut = Convert.ToSingle(Math.Log10(xValue));
         vOut = Math.Abs(vOut);
+
+        vOut = Helper.Clamp(vOut, .4f, 1f);
         return vOut;
     }
 

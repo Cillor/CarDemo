@@ -93,7 +93,7 @@ public class Drivetrain : MonoBehaviour
     private void Update()
     {
         GetInput();
-        engine.UserInput(acceleratorInput, acceleratorPressed, clutchPressed);
+        engine.UserInput(acceleratorInput, acceleratorPressed, EngineEngagedWithWheels());
         GearChange();
     }
 
@@ -151,7 +151,7 @@ public class Drivetrain : MonoBehaviour
     private void FixedUpdate()
     {
         Debug.Log(PilotShaftSpeed());
-        engine.UpdateEngine(PilotShaftSpeed(), Time.deltaTime);
+        engine.UpdateEngine(carSpeedInMetersPerSecond, PilotShaftSpeed(), Time.deltaTime);
 
         SteerWheels();
         BrakeWheels();
@@ -164,6 +164,17 @@ public class Drivetrain : MonoBehaviour
     private float WheelShaftForce()
     {
         return engineTorque.Evaluate(engine.RPM) * gearbox.shaftDriveRatio / wheelRadius * clutchInput;
+    }
+
+    bool EngineEngagedWithWheels()
+    {
+        if (clutchPressed)
+            return false;
+        if (gearbox.actualGear == gearbox.neutralGear)
+            return false;
+
+        return true;
+
     }
 
     private float PilotShaftSpeed()
@@ -188,6 +199,9 @@ public class Drivetrain : MonoBehaviour
 
     void PowerWheels()
     {
+        if (LapTimer.countdownStart > 0)
+            return;
+
         foreach (WheelCollider wheel in wheels)
         {
             bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
