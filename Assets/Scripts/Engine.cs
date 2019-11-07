@@ -10,6 +10,8 @@ public class Engine
     const float extraRPM = 500;
 
     const float rpmLoss = 2000;
+    private const int carTopSpeed = 86;
+    private const float engineBraking = 5f;
     bool acceleratorPressed, engineEngagedWithWheels;
     float acceleratorInput;
     float deltaTime;
@@ -31,14 +33,29 @@ public class Engine
     public void UpdateEngine(float _carSpeedMS, float _pilotShaftSpeed, float _deltaTime)
     {
         carSpeedMS = _carSpeedMS;
+        EngineDamage();
         bool engineBroken = damage > 100;
         if (engineBroken)
         {
+            RPM = 0;
             return;
         }
 
         deltaTime = _deltaTime;
         Crankshaft(_pilotShaftSpeed);
+    }
+
+    public void EngineDamage()
+    {
+        if (RPM > RPMLimit)
+        {
+            float overshootedRPM = (RPM - RPMLimit) / 1000;
+            float damageToAplly = (float)Math.Pow(2, 0.5 * overshootedRPM);
+
+            damage += damageToAplly * deltaTime;
+
+            damage = Helper.Clamp(damage, 0, 101);
+        }
     }
 
     void Crankshaft(float _pilotShaftSpeed)
@@ -63,11 +80,8 @@ public class Engine
         {
             RPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
                                 Helper.Clamp(acceleratorInput, .45f, .55f));
-            //Concerta essa bagunça aqui
             engineRPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
-                                Helper.Clamp(carSpeedMS / 60, 0, .1f));
-            //Vc dividiu isso por 60 pra tentar fazer com que o Lerp fosse aumentando
-            //de acordo com a velocidade
+                                Helper.Clamp(carSpeedMS / carTopSpeed, 0, engineBraking / 100));
         }
         else
             RPM = engineRPM;

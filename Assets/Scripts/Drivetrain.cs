@@ -125,7 +125,7 @@ public class Drivetrain : MonoBehaviour
         {
             if (!clutchPressed)
             {
-                if (Random.value < .4f)
+                if (Random.value < .6f)
                     return;
 
                 gearbox.damage++;
@@ -148,9 +148,9 @@ public class Drivetrain : MonoBehaviour
         }
     }
 
+    float time = 0;
     private void FixedUpdate()
     {
-        Debug.Log(PilotShaftSpeed());
         engine.UpdateEngine(carSpeedInMetersPerSecond, PilotShaftSpeed(), Time.deltaTime);
 
         SteerWheels();

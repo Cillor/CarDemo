@@ -9,13 +9,21 @@ public class FuelConsumption : MonoBehaviour
     private float litersConsumptionPerSecond;
     public int cylindersQuantity = 6, rpmPerInjection = 3;
     public float tankCapacityInLiters = 90, topSpeedInMetersPerSecond = 84, desiredConsumptionInMetersPerLiter = 700;
+
+    [Space]
+    public float fuelDensityInKgPerLiter = 0.73f;
     Drivetrain drivetrain;
+
+    Rigidbody rb;
+    float carMass;
 
     // Start is called before the first frame update
     void Start()
     {
         drivetrain = GetComponent<Drivetrain>();
         fuelInTank = tankCapacityInLiters;
+        rb = GetComponent<Rigidbody>();
+        carMass = rb.mass;
     }
 
     // Update is called once per frame
@@ -34,6 +42,7 @@ public class FuelConsumption : MonoBehaviour
         if (fuelInTank > 0)
             fuelInTank -= (litersConsumptionPerSecond * Time.deltaTime);
 
+        rb.mass = carMass + (fuelInTank * fuelDensityInKgPerLiter);
         //Debug.Log(fuelInTank);
     }
 }

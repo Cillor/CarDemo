@@ -7,7 +7,7 @@ using TMPro;
 [RequireComponent(typeof(Drivetrain))]
 public class CarHUD : MonoBehaviour
 {
-    public TMP_Text actualGearText, speedText, fuelInTankText, rpmText;
+    public TMP_Text actualGearText, speedText, fuelInTankText, rpmText, engineDamageText;
     Drivetrain drivetrain;
     private float minNeedleAng = 90f, maxNeedleAng = -90f;
     public Image engineRPMNeedle;
@@ -29,6 +29,7 @@ public class CarHUD : MonoBehaviour
         actualGearText.text = (drivetrain.gearbox.actualGear - 1).ToString();
         speedText.text = Helper.Round(Drivetrain.carSpeedInMetersPerSecond * 3.6f, 2) + "km/h";
         rpmText.text = Mathf.Round(drivetrain.engine.RPM).ToString();
+        engineDamageText.text = Mathf.Round(drivetrain.engine.damage).ToString();
     }
 
     public void ChangeRPMNeedle()
