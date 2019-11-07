@@ -1,12 +1,11 @@
 public class Gearbox
 {
-    public float shaftDriveRatio;
     public float damage;
 
     public int actualGear = 1;
 
-    float[] gearRatios;
-    float finalDriveRatio;
+    public float[] gearRatios;
+    public float finalDriveRatio;
 
     int numberOfGears;
     public int rearGear = 0, neutralGear = 1, firstGear = 2, secondGear = 3, thirdGear = 4,
@@ -37,7 +36,6 @@ public class Gearbox
         if (actualGear < numberOfGears - 1)
         {
             actualGear++;
-            shaftDriveRatio = gearRatios[actualGear] * finalDriveRatio;
         }
     }
 
@@ -49,7 +47,6 @@ public class Gearbox
         if (actualGear > rearGear)
         {
             actualGear--;
-            shaftDriveRatio = gearRatios[actualGear] * finalDriveRatio;
         }
     }
 }

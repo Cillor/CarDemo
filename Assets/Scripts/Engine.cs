@@ -42,7 +42,7 @@ public class Engine
         }
 
         deltaTime = _deltaTime;
-        Crankshaft(_pilotShaftSpeed);
+        RPM = GetCarRPM(_pilotShaftSpeed);
     }
 
     public void EngineDamage()
@@ -58,7 +58,7 @@ public class Engine
         }
     }
 
-    void Crankshaft(float _pilotShaftSpeed)
+    public float GetCarRPM(float _pilotShaftSpeed)
     {
         float maxRPMAllowed = acceleratorInput * RPMLimit + extraRPM;
 
@@ -78,13 +78,13 @@ public class Engine
 
         if (engineEngagedWithWheels)
         {
-            RPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
-                                Helper.Clamp(acceleratorInput, .45f, .55f));
             engineRPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
                                 Helper.Clamp(carSpeedMS / carTopSpeed, 0, engineBraking / 100));
+            return Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
+                                Helper.Clamp(acceleratorInput, .45f, .55f));
         }
         else
-            RPM = engineRPM;
+            return engineRPM;
     }
 
     float EngineShaftFriction(float _maxRPM)

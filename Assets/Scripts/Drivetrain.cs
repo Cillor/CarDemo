@@ -1,5 +1,6 @@
 using UnityEngine;
 
+public enum GearboxType { Automatic, Sequential, Manual }
 public class Drivetrain : MonoBehaviour
 {
     public Engine engine;
@@ -23,6 +24,11 @@ public class Drivetrain : MonoBehaviour
     [Header("Wheels")]
     public float maxSteerAngle;
     public GameObject frontWheelShape, rearWheelShape;
+
+    [Space]
+    [Header("Control Options")]
+    public GearboxType gearboxType = GearboxType.Sequential;
+    public bool hasClutch = true;
 
     private WheelCollider[] wheels;
     private Rigidbody rb;
@@ -100,29 +106,122 @@ public class Drivetrain : MonoBehaviour
     private void GetInput()
     {
         steeringWheelInput = Input.GetAxis("SteeringWheel");
-        acceleratorInput = Input.GetAxis("Accelerator");
-
-        if (FuelConsumption.fuelInTank < 0)
-            acceleratorInput = 0;
 
         brakeInput = Input.GetAxis("Brake");
-        clutchPressed = Input.GetButton("Clutch");
+
+        acceleratorInput = Input.GetAxis("Accelerator");
+        if (FuelConsumption.fuelInTank < 0)
+            acceleratorInput = 0;
 
         if (acceleratorInput > 0)
             acceleratorPressed = true;
         else
             acceleratorPressed = false;
 
-        if (clutchPressed)
-            clutchInput = 0;
+        if (hasClutch)
+        {
+            clutchPressed = Input.GetButton("Clutch");
+            if (clutchPressed)
+                clutchInput = 0;
+            else
+                clutchInput = 1;
+        }
         else
             clutchInput = 1;
     }
 
-    private void GearChange()
+    void GearChange()
+    {
+        switch (gearboxType)
+        {
+            case GearboxType.Automatic:
+                AutomaticGearChange();
+                break;
+            case GearboxType.Sequential:
+                SequentialGearChange();
+                break;
+            case GearboxType.Manual:
+                ManualGearChange();
+                break;
+        }
+    }
+
+    void AutomaticGearChange()
+    {
+        if (WheelShaftForce(gearbox.actualGear) < WheelShaftForce(gearbox.actualGear + 1))
+            gearbox.ShiftUp();
+        if (WheelShaftForce(gearbox.actualGear) < WheelShaftForce(gearbox.actualGear - 1))
+            if (gearbox.actualGear > gearbox.neutralGear)
+                gearbox.ShiftDown();
+
+        engine.damage = 0;
+    }
+
+    private void ManualGearChange()
+    {
+        if (Input.GetButtonDown("ReverseGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.rearGear;
+        }
+        if (Input.GetButtonDown("NeutralGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.neutralGear;
+        }
+        if (Input.GetButtonDown("FirstGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.firstGear;
+        }
+        if (Input.GetButtonDown("SecondGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.secondGear;
+        }
+        if (Input.GetButtonDown("ThirdGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.thirdGear;
+        }
+        if (Input.GetButtonDown("FourthGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.fourthGear;
+        }
+        if (Input.GetButtonDown("FifthGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.fifthGear;
+        }
+        if (Input.GetButtonDown("SixthGear"))
+        {
+            TestClutchPress();
+            gearbox.actualGear = gearbox.sixthGear;
+        }
+    }
+    private void SequentialGearChange()
     {
         if (Input.GetButtonDown("GearUp"))
         {
+            TestClutchPress();
+
+            gearbox.ShiftUp();
+        }
+
+        if (Input.GetButtonDown("GearDown"))
+        {
+            TestClutchPress();
+
+            gearbox.ShiftDown();
+        }
+    }
+
+    void TestClutchPress()
+    {
+        if (hasClutch)
+        {
+            Debug.Log("AAAA");
             if (!clutchPressed)
             {
                 if (Random.value < .6f)
@@ -130,28 +229,12 @@ public class Drivetrain : MonoBehaviour
 
                 gearbox.damage++;
             }
-
-            gearbox.ShiftUp();
-        }
-
-        if (Input.GetButtonDown("GearDown"))
-        {
-            if (!clutchPressed)
-            {
-                if (Random.value < .4f)
-                    return;
-
-                gearbox.damage++;
-            }
-
-            gearbox.ShiftDown();
         }
     }
-
     float time = 0;
     private void FixedUpdate()
     {
-        engine.UpdateEngine(carSpeedInMetersPerSecond, PilotShaftSpeed(), Time.deltaTime);
+        engine.UpdateEngine(carSpeedInMetersPerSecond, PilotShaftSpeed(gearbox.actualGear), Time.deltaTime);
 
         SteerWheels();
         BrakeWheels();
@@ -161,9 +244,10 @@ public class Drivetrain : MonoBehaviour
 
         UpdateWheelPoses();
     }
-    private float WheelShaftForce()
+    private float WheelShaftForce(int desiredGear)
     {
-        return engineTorque.Evaluate(engine.RPM) * gearbox.shaftDriveRatio / wheelRadius * clutchInput;
+        float shaftDriveRatio = gearbox.gearRatios[desiredGear] * gearbox.finalDriveRatio;
+        return engineTorque.Evaluate(engine.GetCarRPM(PilotShaftSpeed(desiredGear))) * shaftDriveRatio / wheelRadius * clutchInput;
     }
 
     bool EngineEngagedWithWheels()
@@ -177,10 +261,11 @@ public class Drivetrain : MonoBehaviour
 
     }
 
-    private float PilotShaftSpeed()
+    private float PilotShaftSpeed(int desiredGear)
     {
+        float shaftDriveRatio = gearbox.gearRatios[desiredGear] * gearbox.finalDriveRatio;
         float wheelRPM = carSpeedInMetersPerSecond / wheelRadius;
-        float pilotShaftRPM = wheelRPM * gearbox.shaftDriveRatio * 60 / 2 * Mathf.PI;
+        float pilotShaftRPM = wheelRPM * shaftDriveRatio * 60 / 2 * Mathf.PI;
 
         return pilotShaftRPM;
     }
@@ -206,7 +291,7 @@ public class Drivetrain : MonoBehaviour
         {
             bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
             if (isBackWheels)
-                wheel.motorTorque = WheelShaftForce() * acceleratorInput;
+                wheel.motorTorque = WheelShaftForce(gearbox.actualGear) * acceleratorInput;
         }
     }
 

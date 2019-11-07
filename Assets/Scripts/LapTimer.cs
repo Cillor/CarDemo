@@ -31,7 +31,7 @@ public class LapTimer : MonoBehaviour
         {
             actualLapTimeMilliseconds -= 100;
             actualLapTimeSeconds++;
-            if (actualLapTimeSeconds > 60)
+            if (actualLapTimeSeconds >= 60)
             {
                 actualLapTimeSeconds -= 60;
                 actualLapTimeMinutes++;
