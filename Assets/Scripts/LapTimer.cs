@@ -25,11 +25,11 @@ public class LapTimer : MonoBehaviour
         countdownStartText.gameObject.SetActive(false);
 
         actualLapTime += Time.deltaTime;
-        actualLapTimeMilliseconds += Time.deltaTime * 100;
+        actualLapTimeMilliseconds += Time.deltaTime * 1000;
         actualLapTimeMilliseconds = Mathf.Round(actualLapTimeMilliseconds);
-        if (actualLapTimeMilliseconds > 100)
+        if (actualLapTimeMilliseconds >= 1000)
         {
-            actualLapTimeMilliseconds -= 100;
+            actualLapTimeMilliseconds -= 1000;
             actualLapTimeSeconds++;
             if (actualLapTimeSeconds >= 60)
             {
@@ -38,7 +38,7 @@ public class LapTimer : MonoBehaviour
             }
         }
 
-        actualLapTimeText.text = "Current lap time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds + "." + actualLapTimeMilliseconds;
+        actualLapTimeText.text = "Current lap time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
     }
 
     private void OnTriggerEnter(Collider other)
@@ -55,7 +55,7 @@ public class LapTimer : MonoBehaviour
                     bestLapTimeSeconds = actualLapTimeSeconds;
                     bestLapTimeMinutes = actualLapTimeMinutes;
                     bestLapTime = actualLapTime;
-                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds + "." + actualLapTimeMilliseconds;
+                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
                     firstLap = false;
                 }
 
@@ -65,7 +65,7 @@ public class LapTimer : MonoBehaviour
                     bestLapTimeSeconds = actualLapTimeSeconds;
                     bestLapTimeMinutes = actualLapTimeMinutes;
                     bestLapTime = actualLapTime;
-                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds + "." + actualLapTimeMilliseconds;
+                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
                 }
                 actualLapTimeMilliseconds = 0;
                 actualLapTimeSeconds = 0;
