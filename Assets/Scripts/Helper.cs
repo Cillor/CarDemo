@@ -49,6 +49,7 @@ public static class Helper
     public static string Serialize<T>(this T toSerialize)
     {
         XmlSerializer xml = new XmlSerializer(typeof(T));
+        Debug.Log("IEI");
         StringWriter writer = new StringWriter();
         xml.Serialize(writer, toSerialize);
         return writer.ToString();

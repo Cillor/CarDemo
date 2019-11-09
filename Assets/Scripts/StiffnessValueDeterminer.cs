@@ -12,8 +12,8 @@ public class StiffnessValueDeterminer : MonoBehaviour
     public Image tireLifeImage;
 
     float tireLife = 1;
-    const float forwardTireDegradationConstant = 8;
-    const float sidewaysTireDegradationConstant = 100;
+    const float forwardTireDegradationConstant = 12;
+    const float sidewaysTireDegradationConstant = 150;
 
     AudioSource audioSource;
 
@@ -55,8 +55,8 @@ public class StiffnessValueDeterminer : MonoBehaviour
             float forwardDegradetion = (absoluteForwardSlip / forwardTireDegradationConstant);
             float sidewaysDegradetion = (absoluteSidewaysSlip / sidewaysTireDegradationConstant);
             tireLife -= ((sidewaysDegradetion + forwardDegradetion) * Time.deltaTime) / 100;
+            tireLife = Mathf.Clamp(tireLife, .05f, 1f);
 
-            Mathf.Clamp01(tireLife);
 
             tireLifeImage.fillAmount = tireLife;
 

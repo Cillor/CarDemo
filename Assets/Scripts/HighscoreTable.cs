@@ -5,29 +5,61 @@ using TMPro;
 
 public class HighscoreTable : MonoBehaviour
 {
+    public static HighscoreTable Instance { get; set; }
+    string currentPlayerName;
+    public TMP_InputField playerName;
+
+    public void ChangePlayerName()
+    {
+        currentPlayerName = playerName.text;
+        Debug.Log(playerName.text);
+    }
+
     public Transform entryContainer, entryTemplate;
     List<Transform> highscoreEntryTransformList;
 
     private void Awake()
     {
-        //PlayerPrefs.DeleteKey("highscoreTable");
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        DontDestroyOnLoad(gameObject);
 
         entryTemplate.gameObject.SetActive(false);
 
-        AddHighscoreEntry("Matheus", 128.985f);
+        if (!PlayerPrefs.HasKey("highscoreTable"))
+        {
+            Highscores highscores1 = new Highscores();
+            string json = JsonUtility.ToJson(highscores1);
+            PlayerPrefs.SetString("highscoreTable", json);
+            PlayerPrefs.Save();
+        }
 
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
+
+        for (int i = 0; i < highscores.highscoreEntryList.Count; i++)
+        {
+            for (int j = 0; j < highscores.highscoreEntryList.Count; j++)
+            {
+                if (highscores.highscoreEntryList[j].lapTime > highscores.highscoreEntryList[i].lapTime)
+                {
+                    HighscoreEntry tmp = highscores.highscoreEntryList[i];
+                    highscores.highscoreEntryList[i] = highscores.highscoreEntryList[j];
+                    highscores.highscoreEntryList[j] = tmp;
+                }
+            }
+        }
 
         highscoreEntryTransformList = new List<Transform>();
         foreach (HighscoreEntry highscoreEntry in highscores.highscoreEntryList)
         {
             CreateHighscoreEntryTransform(highscoreEntry, highscoreEntryTransformList);
         }
-
-        string json = JsonUtility.ToJson(highscores);
-        PlayerPrefs.SetString("highscoreTable", json);
-        PlayerPrefs.Save();
     }
 
     string FormatToLapTime(float time)
@@ -37,7 +69,7 @@ public class HighscoreTable : MonoBehaviour
         float lapTimeMinutes = ((time - lapTimeMiliseconds) - lapTimeSeconds) / 60;
         lapTimeMiliseconds = Mathf.Round(lapTimeMiliseconds * 1000);
 
-        string milisecondsText = lapTimeMiliseconds.ToString("###");
+        string milisecondsText = lapTimeMiliseconds.ToString("000");
         string secondsText = lapTimeSeconds.ToString("00");
         string minutesText = lapTimeMinutes.ToString("##");
 
@@ -62,16 +94,12 @@ public class HighscoreTable : MonoBehaviour
         transformList.Add(entryTransform);
     }
 
-    public void AddHighscoreEntry(string name, float lapTime)
+    public void AddHighscoreEntry(float lapTime)
     {
-        HighscoreEntry highscoreEntry = new HighscoreEntry { name = name, lapTime = lapTime };
-
+        HighscoreEntry newHighscoreEntry = new HighscoreEntry { name = currentPlayerName, lapTime = lapTime };
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
-
-        Debug.Log(highscores.highscoreEntryList.Count);
-
-        highscores.highscoreEntryList.Add(highscoreEntry);
+        highscores.highscoreEntryList.Add(newHighscoreEntry);
 
         for (int i = 0; i < highscores.highscoreEntryList.Count; i++)
         {
@@ -86,10 +114,10 @@ public class HighscoreTable : MonoBehaviour
             }
         }
 
-        if (highscores.highscoreEntryList.Count > 8)
+        if (highscores.highscoreEntryList.Count > 10)
         {
             int worstLapTimeIndex = highscores.highscoreEntryList.Count - 1;
-            if (highscores.highscoreEntryList[worstLapTimeIndex] == highscoreEntry)
+            if (highscores.highscoreEntryList[worstLapTimeIndex] == newHighscoreEntry)
             {
                 highscores.highscoreEntryList.RemoveAt(worstLapTimeIndex);
             }
@@ -111,16 +139,17 @@ public class HighscoreTable : MonoBehaviour
 
     void NewHighscore()
     {
-        Debug.Log("Novo recorde!");
+        Debug.Log("Novo recorde de " + currentPlayerName);
     }
 
-    private class Highscores
+    [System.Serializable]
+    public class Highscores
     {
         public List<HighscoreEntry> highscoreEntryList;
     }
 
     [System.Serializable]
-    private class HighscoreEntry
+    public class HighscoreEntry
     {
         public float lapTime;
         public string name;

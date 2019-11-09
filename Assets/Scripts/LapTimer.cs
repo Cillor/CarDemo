@@ -25,20 +25,8 @@ public class LapTimer : MonoBehaviour
         countdownStartText.gameObject.SetActive(false);
 
         actualLapTime += Time.deltaTime;
-        actualLapTimeMilliseconds += Time.deltaTime * 1000;
-        actualLapTimeMilliseconds = Mathf.Round(actualLapTimeMilliseconds);
-        if (actualLapTimeMilliseconds >= 1000)
-        {
-            actualLapTimeMilliseconds -= 1000;
-            actualLapTimeSeconds++;
-            if (actualLapTimeSeconds >= 60)
-            {
-                actualLapTimeSeconds -= 60;
-                actualLapTimeMinutes++;
-            }
-        }
 
-        actualLapTimeText.text = "Current lap time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
+        actualLapTimeText.text = "Volta atual: " + FormatToLapTime(actualLapTime);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -51,25 +39,15 @@ public class LapTimer : MonoBehaviour
             {
                 if (firstLap)
                 {
-                    bestLapTimeMilliseconds = actualLapTimeMilliseconds;
-                    bestLapTimeSeconds = actualLapTimeSeconds;
-                    bestLapTimeMinutes = actualLapTimeMinutes;
-                    bestLapTime = actualLapTime;
-                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
+                    SetBestLapTime();
                     firstLap = false;
                 }
 
                 if (actualLapTime < bestLapTime)
                 {
-                    bestLapTimeMilliseconds = actualLapTimeMilliseconds;
-                    bestLapTimeSeconds = actualLapTimeSeconds;
-                    bestLapTimeMinutes = actualLapTimeMinutes;
-                    bestLapTime = actualLapTime;
-                    bestLapTimeText.text = "Best Lap Time: " + actualLapTimeMinutes + ":" + actualLapTimeSeconds.ToString("00") + "." + actualLapTimeMilliseconds.ToString("###");
+                    SetBestLapTime();
                 }
-                actualLapTimeMilliseconds = 0;
-                actualLapTimeSeconds = 0;
-                actualLapTimeMinutes = 0;
+
                 actualLapTime = 0;
 
                 actualCheckpoint = 0;
@@ -80,11 +58,29 @@ public class LapTimer : MonoBehaviour
         {
             return;
         }
+    }
 
-        if (actualCheckpoint == checkpointTriggers.Count)
-        {
+    void SetBestLapTime()
+    {
+        bestLapTime = actualLapTime;
 
-        }
+        bestLapTimeText.text = "Melhor volta: " + FormatToLapTime(bestLapTime);
+
+        HighscoreTable.Instance.AddHighscoreEntry(bestLapTime);
+    }
+
+    string FormatToLapTime(float time)
+    {
+        float lapTimeMiliseconds = time - Mathf.Floor(time);
+        float lapTimeSeconds = (time - lapTimeMiliseconds) % 60;
+        float lapTimeMinutes = ((time - lapTimeMiliseconds) - lapTimeSeconds) / 60;
+        lapTimeMiliseconds = Mathf.Round(lapTimeMiliseconds * 1000);
+
+        string milisecondsText = lapTimeMiliseconds.ToString("000");
+        string secondsText = lapTimeSeconds.ToString("00");
+        string minutesText = lapTimeMinutes.ToString("00");
+
+        return (minutesText + ":" + secondsText + "." + milisecondsText);
     }
 
 }

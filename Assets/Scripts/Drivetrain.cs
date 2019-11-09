@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public enum GearboxType { Automatic, Sequential, Manual }
@@ -36,7 +37,10 @@ public class Drivetrain : MonoBehaviour
     private bool acceleratorPressed, clutchPressed;
     private float wheelRadius;
     public static float carSpeedInMetersPerSecond;
+    private const int carTopSpeed = 86;
+
     private const float carMiddlePosition = 0;
+    private const int engineBraking = 2;
 
     private void Start()
     {
@@ -130,31 +134,44 @@ public class Drivetrain : MonoBehaviour
             clutchInput = 1;
     }
 
+    bool canUseAutomaticGear = true;
     void GearChange()
     {
         switch (gearboxType)
         {
             case GearboxType.Automatic:
-                AutomaticGearChange();
+                if (canUseAutomaticGear)
+                {
+                    StartCoroutine(nameof(AutomaticGearChange));
+                    canUseAutomaticGear = false;
+                }
                 break;
             case GearboxType.Sequential:
                 SequentialGearChange();
+                StopCoroutine(nameof(AutomaticGearChange));
+                canUseAutomaticGear = true;
                 break;
             case GearboxType.Manual:
+                StopCoroutine(nameof(AutomaticGearChange));
+                canUseAutomaticGear = true;
                 ManualGearChange();
                 break;
         }
     }
 
-    void AutomaticGearChange()
+    IEnumerator AutomaticGearChange()
     {
-        if (WheelShaftForce(gearbox.actualGear) < WheelShaftForce(gearbox.actualGear + 1))
-            gearbox.ShiftUp();
-        if (WheelShaftForce(gearbox.actualGear) < WheelShaftForce(gearbox.actualGear - 1))
-            if (gearbox.actualGear > gearbox.neutralGear)
-                gearbox.ShiftDown();
+        while (true)
+        {
+            if (engine.RPM > 13000)
+                gearbox.ShiftUp();
+            if (engine.RPM < 9000)
+                if (gearbox.actualGear > gearbox.firstGear)
+                    gearbox.ShiftDown();
 
-        engine.damage = 0;
+            engine.damage = 0;
+            yield return new WaitForSeconds(.5f);
+        }
     }
 
     private void ManualGearChange()
@@ -289,9 +306,13 @@ public class Drivetrain : MonoBehaviour
 
         foreach (WheelCollider wheel in wheels)
         {
+            float carSpeed = carSpeedInMetersPerSecond;
+            if (carSpeed < carTopSpeed / engineBraking)
+                carSpeed = 0;
+
             bool isBackWheels = wheel.transform.localPosition.z < carMiddlePosition;
             if (isBackWheels)
-                wheel.motorTorque = WheelShaftForce(gearbox.actualGear) * acceleratorInput;
+                wheel.motorTorque = WheelShaftForce(gearbox.actualGear) * Mathf.Clamp(acceleratorInput, carSpeed / (carTopSpeed * engineBraking), 1);
         }
     }
 

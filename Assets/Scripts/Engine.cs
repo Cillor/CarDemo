@@ -11,7 +11,7 @@ public class Engine
 
     const float rpmLoss = 2000;
     private const int carTopSpeed = 86;
-    private const float engineBraking = 5f;
+    private const float clutchFriction = 5f;
     bool acceleratorPressed, engineEngagedWithWheels;
     float acceleratorInput;
     float deltaTime;
@@ -79,7 +79,7 @@ public class Engine
         if (engineEngagedWithWheels)
         {
             engineRPM = Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
-                                Helper.Clamp(carSpeedMS / carTopSpeed, 0, engineBraking / 100));
+                                Helper.Clamp(carSpeedMS / carTopSpeed, clutchFriction / 500, clutchFriction / 100));
             return Helper.Lerp(Math.Abs(engineRPM), Math.Abs(_pilotShaftSpeed),
                                 Helper.Clamp(acceleratorInput, .45f, .55f));
         }
