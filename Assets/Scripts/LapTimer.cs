@@ -31,32 +31,35 @@ public class LapTimer : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (checkpointTriggers.Count > 0)
+        if (other.gameObject.tag == "Checkpoint")
         {
-            checkpointTriggers[actualCheckpoint].SetActive(false);
-            actualCheckpoint++;
-            if (actualCheckpoint == checkpointTriggers.Count)
+            if (checkpointTriggers.Count > 0)
             {
-                if (firstLap)
+                checkpointTriggers[actualCheckpoint].SetActive(false);
+                actualCheckpoint++;
+                if (actualCheckpoint == checkpointTriggers.Count)
                 {
-                    SetBestLapTime();
-                    firstLap = false;
+                    if (firstLap)
+                    {
+                        SetBestLapTime();
+                        firstLap = false;
+                    }
+
+                    if (actualLapTime < bestLapTime)
+                    {
+                        SetBestLapTime();
+                    }
+
+                    actualLapTime = 0;
+
+                    actualCheckpoint = 0;
                 }
-
-                if (actualLapTime < bestLapTime)
-                {
-                    SetBestLapTime();
-                }
-
-                actualLapTime = 0;
-
-                actualCheckpoint = 0;
+                checkpointTriggers[actualCheckpoint].SetActive(true);
             }
-            checkpointTriggers[actualCheckpoint].SetActive(true);
-        }
-        else
-        {
-            return;
+            else
+            {
+                return;
+            }
         }
     }
 

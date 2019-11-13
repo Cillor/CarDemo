@@ -1,5 +1,7 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public enum GearboxType { Automatic, Sequential, Manual }
 public class Drivetrain : MonoBehaviour
@@ -9,17 +11,28 @@ public class Drivetrain : MonoBehaviour
 
     [Header("Engine")]
     public AnimationCurve engineTorque;
+    public int engineBraking = 2;
+
+    public void SetEngineBraking(Slider engineBrakingSlider)
+    {
+        engineBraking = Mathf.RoundToInt(engineBrakingSlider.value);
+    }
+
 
     [Space]
     [Header("Brakes")]
     [Range(0, 1)] public float frontBrakeBias;
+    public void SetFrontBrakeBias(Slider brakeBiasSlider)
+    {
+        frontBrakeBias = brakeBiasSlider.value;
+        frontBrakeBias = Mathf.Clamp01(frontBrakeBias);
+    }
     public float brakeTorque;
 
     [Space]
     [Header("Gearbox")]
     public float[] gearRatios;
     public float finalDriveRatio;
-
 
     [Space]
     [Header("Wheels")]
@@ -29,7 +42,36 @@ public class Drivetrain : MonoBehaviour
     [Space]
     [Header("Control Options")]
     public GearboxType gearboxType = GearboxType.Sequential;
+
+    public void SetGearboxType(TMP_Dropdown gearboxTypeDropdown)
+    {
+        switch (gearboxTypeDropdown.value)
+        {
+            case 0:
+                gearboxType = GearboxType.Manual;
+                break;
+            case 1:
+                gearboxType = GearboxType.Sequential;
+                break;
+            case 2:
+                gearboxType = GearboxType.Automatic;
+                hasClutch = false;
+                Toggle clutchToggle = GameObject.Find("hasClutch").GetComponent<Toggle>();
+                clutchToggle.isOn = false;
+                break;
+        }
+    }
     public bool hasClutch = true;
+    public void SetClutch(Toggle clutchToggle)
+    {
+        hasClutch = clutchToggle.isOn;
+
+        if (gearboxType == GearboxType.Automatic)
+        {
+            hasClutch = false;
+            clutchToggle.isOn = false;
+        }
+    }
 
     private WheelCollider[] wheels;
     private Rigidbody rb;
@@ -40,7 +82,6 @@ public class Drivetrain : MonoBehaviour
     private const int carTopSpeed = 86;
 
     private const float carMiddlePosition = 0;
-    private const int engineBraking = 2;
 
     private void Start()
     {
@@ -163,8 +204,21 @@ public class Drivetrain : MonoBehaviour
     {
         while (true)
         {
+            if (carSpeedInMetersPerSecond < 0.1f)
+            {
+                if (brakeInput > .9f && gearbox.actualGear == gearbox.firstGear)
+                {
+                    gearbox.actualGear = gearbox.reverseGear;
+                }
+                else if (brakeInput > .9f && gearbox.actualGear == gearbox.reverseGear)
+                {
+                    gearbox.actualGear = gearbox.neutralGear;
+                }
+            }
+
             if (engine.RPM > 13000)
-                gearbox.ShiftUp();
+                if (gearbox.actualGear > gearbox.reverseGear)
+                    gearbox.ShiftUp();
             if (engine.RPM < 9000)
                 if (gearbox.actualGear > gearbox.firstGear)
                     gearbox.ShiftDown();
@@ -179,7 +233,7 @@ public class Drivetrain : MonoBehaviour
         if (Input.GetButtonDown("ReverseGear"))
         {
             TestClutchPress();
-            gearbox.actualGear = gearbox.rearGear;
+            gearbox.actualGear = gearbox.reverseGear;
         }
         if (Input.GetButtonDown("NeutralGear"))
         {
@@ -217,6 +271,7 @@ public class Drivetrain : MonoBehaviour
             gearbox.actualGear = gearbox.sixthGear;
         }
     }
+
     private void SequentialGearChange()
     {
         if (Input.GetButtonDown("GearUp"))
@@ -238,7 +293,6 @@ public class Drivetrain : MonoBehaviour
     {
         if (hasClutch)
         {
-            Debug.Log("AAAA");
             if (!clutchPressed)
             {
                 if (Random.value < .6f)
@@ -261,6 +315,7 @@ public class Drivetrain : MonoBehaviour
 
         UpdateWheelPoses();
     }
+
     private float WheelShaftForce(int desiredGear)
     {
         float shaftDriveRatio = gearbox.gearRatios[desiredGear] * gearbox.finalDriveRatio;
@@ -295,7 +350,7 @@ public class Drivetrain : MonoBehaviour
         {
             bool isFrontWheels = wheel.transform.localPosition.z > carMiddlePosition;
             if (isFrontWheels)
-                wheel.steerAngle = steeringAngle;
+                wheel.steerAngle = steeringAngle * Mathf.Clamp((1 - carSpeedInMetersPerSecond / carTopSpeed), .1f, 1);
         }
     }
 

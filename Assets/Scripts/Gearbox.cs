@@ -8,7 +8,7 @@ public class Gearbox
     public float finalDriveRatio;
 
     int numberOfGears;
-    public int rearGear = 0, neutralGear = 1, firstGear = 2, secondGear = 3, thirdGear = 4,
+    public int reverseGear = 0, neutralGear = 1, firstGear = 2, secondGear = 3, thirdGear = 4,
         fourthGear = 5, fifthGear = 6, sixthGear = 7;
 
     public Gearbox(float[] _gearRatios, float _finalDriveRatio)
@@ -44,7 +44,7 @@ public class Gearbox
         if (GearboxBroken())
             return;
 
-        if (actualGear > rearGear)
+        if (actualGear > reverseGear)
         {
             actualGear--;
         }

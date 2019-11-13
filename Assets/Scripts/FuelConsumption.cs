@@ -1,10 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FuelConsumption : MonoBehaviour
 {
     public static float fuelInTank;
+    public void ChangeFuelInTank(Slider fuelSlider)
+    {
+        fuelInTank = fuelSlider.value;
+    }
+
+    public void UpdateFuelInTankValue(Slider fuelSlider)
+    {
+        fuelSlider.value = fuelInTank;
+    }
+
     private float fuelMetering, acceleratorInput;
     private float litersConsumptionPerSecond;
     public int cylindersQuantity = 6, rpmPerInjection = 3;
