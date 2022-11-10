@@ -4,7 +4,7 @@ Para Sempre Senna é um simcade desenvolvido em 2019 para a Mostra Técnica de P
 
 <div align="center">
   <img height="250" src="https://i.imgur.com/bJYMZHF.png">
-  <img height="250" src="https://i.imgur.com/54CXGkM.png">
+  <img height="250" src="https://i.imgur.com/BFcVSn9.png">
 </div>
 <!---
   <img height="250" src="https://i.imgur.com/fqRadxd.png">
